@@ -1,3 +1,8 @@
+// Copyright 2013 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Program gops is a tool to list currently running Go processes.
 package main
 
 import (
@@ -25,13 +30,16 @@ func main() {
 
 		ok, err := isGo(name)
 		if err != nil {
-			undetermined++
 			continue
 		}
 
 		if ok {
 			fmt.Printf("%d\t%v\n", pr.Pid(), pr.Executable())
 		}
+	}
+
+	if undetermined > 0 {
+		fmt.Printf("\n%d processes\n", undetermined)
 	}
 }
 
@@ -48,6 +56,7 @@ func isGo(filename string) (ok bool, err error) {
 	}
 
 	// TODO(jbd): find a faster way to determine Go programs
+	// looping over the symbols is a joke.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
 			return true, nil
