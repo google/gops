@@ -39,7 +39,7 @@ func main() {
 	}
 
 	if undetermined > 0 {
-		fmt.Printf("\n%d processes\n", undetermined)
+		fmt.Printf("\n%d processes left undetermined\n", undetermined)
 	}
 }
 
