@@ -8,23 +8,13 @@ package agent
 
 import (
 	"fmt"
+	"hello/gops/agent/signal"
 	"log"
 	"net"
 	"os"
 	"runtime"
 	"runtime/debug"
 	"time"
-)
-
-const (
-	// Stack represents a command to print stack trace.
-	Stack = byte(0x1)
-
-	// GC runs the garbage collector.
-	GC = byte(0x2)
-
-	// GCStats prints GC stats.
-	GCStats = byte(0x3)
 )
 
 func init() {
@@ -57,16 +47,16 @@ func init() {
 
 func handle(conn net.Conn, msg []byte) error {
 	switch msg[0] {
-	case Stack:
+	case signal.Stack:
 		buf := make([]byte, 1<<16)
 		n := runtime.Stack(buf, true)
 		_, err := conn.Write(buf[:n])
 		return err
-	case GC:
+	case signal.GC:
 		runtime.GC()
 		_, err := conn.Write([]byte("ok"))
 		return err
-	case GCStats:
+	case signal.GCStats:
 		var stats debug.GCStats
 		debug.ReadGCStats(&stats)
 		fmt.Fprintf(conn, "Num GC: %v\n", stats.NumGC)
