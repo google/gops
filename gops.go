@@ -57,21 +57,21 @@ func main() {
 	}
 	if *stack {
 		out, err := cmd(signal.Stack)
-		exit(err)
+		exitIfError(err)
 		fmt.Println(out)
 	}
 	if *gc {
 		_, err := cmd(signal.GC)
-		exit(err)
+		exitIfError(err)
 	}
 	if *memstats {
 		out, err := cmd(signal.MemStats)
-		exit(err)
+		exitIfError(err)
 		fmt.Printf(out)
 	}
 	if *version {
 		out, err := cmd(signal.Version)
-		exit(err)
+		exitIfError(err)
 		fmt.Printf(out)
 	}
 }
@@ -145,9 +145,10 @@ func usage() {
 	os.Exit(1)
 }
 
-func exit(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+func exitIfError(err error) {
+	if err == nil {
+		return
 	}
+	fmt.Fprintf(os.Stderr, "%v\n", err)
+	os.Exit(1)
 }
