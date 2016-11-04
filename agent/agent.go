@@ -29,15 +29,15 @@ func init() {
 		for {
 			fd, err := l.Accept()
 			if err != nil {
-				log.Println(err)
+				fmt.Fprintf(os.Stderr, "gops: %v", err)
 				continue
 			}
 			if _, err := fd.Read(buf); err != nil {
-				log.Println(err)
+				fmt.Fprintf(os.Stderr, "gops: %v", err)
 				continue
 			}
 			if err := handle(fd, buf); err != nil {
-				log.Println(err)
+				fmt.Fprintf(os.Stderr, "gops: %v", err)
 				continue
 			}
 			fd.Close()
