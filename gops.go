@@ -36,12 +36,12 @@ All options require the agent and the -p=<pid> flag.
 // TODO(jbd): add link that explains the use of agent.
 
 var (
-	pid     = flag.Int("p", -1, "")
-	stack   = flag.Bool("stack", false, "")
-	gc      = flag.Bool("gc", false, "")
-	gcstats = flag.Bool("gcstats", false, "")
-	version = flag.Bool("version", false, "")
-	help    = flag.Bool("help", false, "")
+	pid      = flag.Int("p", -1, "")
+	stack    = flag.Bool("stack", false, "")
+	gc       = flag.Bool("gc", false, "")
+	memstats = flag.Bool("memstats", false, "")
+	version  = flag.Bool("version", false, "")
+	help     = flag.Bool("help", false, "")
 )
 
 func main() {
@@ -64,8 +64,8 @@ func main() {
 		_, err := cmd(signal.GC)
 		exit(err)
 	}
-	if *gcstats {
-		out, err := cmd(signal.GCStats)
+	if *memstats {
+		out, err := cmd(signal.MemStats)
 		exit(err)
 		fmt.Printf(out)
 	}

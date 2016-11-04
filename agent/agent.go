@@ -13,8 +13,6 @@ import (
 	"net"
 	"os"
 	"runtime"
-	"runtime/debug"
-	"time"
 )
 
 func init() {
@@ -56,14 +54,29 @@ func handle(conn net.Conn, msg []byte) error {
 		runtime.GC()
 		_, err := conn.Write([]byte("ok"))
 		return err
-	case signal.GCStats:
-		var stats debug.GCStats
-		debug.ReadGCStats(&stats)
-		fmt.Fprintf(conn, "Num GC: %v\n", stats.NumGC)
-		if stats.NumGC > 0 {
-			fmt.Fprintf(conn, "Last GC: %v ago\n", time.Now().Sub(stats.LastGC))
-			fmt.Fprintf(conn, "Total pause: %v\n", stats.PauseTotal)
-		}
+	case signal.MemStats:
+		var s runtime.MemStats
+		runtime.ReadMemStats(&s)
+		fmt.Fprintf(conn, "alloc: %v\n", s.Alloc)
+		fmt.Fprintf(conn, "total-alloc: %v\n", s.TotalAlloc)
+		fmt.Fprintf(conn, "sys: %v\n", s.Sys)
+		fmt.Fprintf(conn, "lookups: %v\n", s.Lookups)
+		fmt.Fprintf(conn, "mallocs: %v\n", s.Mallocs)
+		fmt.Fprintf(conn, "frees: %v\n", s.Frees)
+		fmt.Fprintf(conn, "heap-alloc: %v\n", s.HeapAlloc)
+		fmt.Fprintf(conn, "heap-sys: %v\n", s.HeapSys)
+		fmt.Fprintf(conn, "heap-idle: %v\n", s.HeapIdle)
+		fmt.Fprintf(conn, "heap-in-use: %v\n", s.HeapInuse)
+		fmt.Fprintf(conn, "heap-released: %v\n", s.HeapReleased)
+		fmt.Fprintf(conn, "heap-objects: %v\n", s.HeapObjects)
+		fmt.Fprintf(conn, "stack-in-use: %v\n", s.StackInuse)
+		fmt.Fprintf(conn, "stack-sys: %v\n", s.StackSys)
+		fmt.Fprintf(conn, "next-gc: %v\n", s.NextGC)
+		fmt.Fprintf(conn, "last-gc: %v ns ago\n", s.LastGC)
+		fmt.Fprintf(conn, "gc-pause: %v ns\n", s.PauseTotalNs)
+		fmt.Fprintf(conn, "num-gc: %v\n", s.NumGC)
+		fmt.Fprintf(conn, "enable-gc: %v\n", s.EnableGC)
+		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
 	case signal.Version:
 		fmt.Fprintf(conn, "%v\n", runtime.Version())
 

@@ -11,8 +11,8 @@ const (
 	// GC runs the garbage collector.
 	GC = byte(0x2)
 
-	// GCStats prints GC stats.
-	GCStats = byte(0x3)
+	// MemStats reports memory stats.
+	MemStats = byte(0x3)
 
 	// Version prints the Go version.
 	Version = byte(0x4)
