@@ -64,6 +64,9 @@ func handle(conn net.Conn, msg []byte) error {
 			fmt.Fprintf(conn, "Last GC: %v ago\n", time.Now().Sub(stats.LastGC))
 			fmt.Fprintf(conn, "Total pause: %v\n", stats.PauseTotal)
 		}
+	case signal.Version:
+		fmt.Fprintf(conn, "%v\n", runtime.Version())
+
 	}
 	return nil
 }

@@ -13,4 +13,7 @@ const (
 
 	// GCStats prints GC stats.
 	GCStats = byte(0x3)
+
+	// Version prints the Go version.
+	Version = byte(0x4)
 )

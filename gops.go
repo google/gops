@@ -27,6 +27,7 @@ Options: (All requires the agent and the -p=<pid> flag.)
     -stack    Prints the stack trace.
     -gc       Runs the garbage collector and blocks until successful.
     -gcstats  Prints the garbage collection stats.
+    -version  Prints the Go version used to build the program.
 `
 
 var (
@@ -34,6 +35,7 @@ var (
 	stack   = flag.Bool("stack", false, "")
 	gc      = flag.Bool("gc", false, "")
 	gcstats = flag.Bool("gcstats", false, "")
+	version = flag.Bool("version", false, "")
 	help    = flag.Bool("help", false, "")
 )
 
@@ -52,24 +54,25 @@ func main() {
 	if *help {
 		usage()
 	}
-
 	if *stack {
 		out, err := cmd(signal.Stack)
 		exit(err)
 		fmt.Println(out)
 	}
-
 	if *gc {
 		_, err := cmd(signal.GC)
 		exit(err)
 	}
-
 	if *gcstats {
 		out, err := cmd(signal.GCStats)
 		exit(err)
 		fmt.Printf(out)
 	}
-
+	if *version {
+		out, err := cmd(signal.Version)
+		exit(err)
+		fmt.Printf(out)
+	}
 }
 
 func cmd(c byte) (string, error) {
