@@ -20,14 +20,13 @@ import (
 )
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
+    gops              Lists all Go processes currently running.
+    gops [options...] See the section below.
 
-  gops  Lists all Go processes currently running.
-
-Advanced tools, requires gops agent:
-       gops stack -p pid    Prints the stack trace of the process.
-       gops gc -p pid       Runs the garbage collector.
-       gops gcstats -p pid  Prints the GC stats of the process.
-       gops help            Prints this help message.
+Options: (All requires the agent and the -p=<pid> flag.)
+    -stack    Prints the stack trace.
+    -gc       Runs the garbage collector and blocks until successful.
+    -gcstats  Prints the garbage collection stats.
 `
 
 var (
