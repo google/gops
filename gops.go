@@ -44,14 +44,10 @@ func main() {
 	flag.Parse()
 
 	if len(os.Args) < 2 {
-		list()
+		goProcesses()
 		return
 	}
-
-	if *pid == -1 {
-		usage()
-	}
-	if *help {
+	if *pid == -1 || *help {
 		usage()
 	}
 	if *stack {
@@ -91,7 +87,7 @@ func cmd(c byte) (string, error) {
 	return string(all), nil
 }
 
-func list() {
+func goProcesses() {
 	pss, err := ps.Processes()
 	if err != nil {
 		log.Fatal(err)
