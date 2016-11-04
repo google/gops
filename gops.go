@@ -27,13 +27,11 @@ func main() {
 			undetermined++
 			continue
 		}
-
 		ok, err := isGo(name)
 		if err != nil {
 			// TODO(jbd): worth to report the number?
 			continue
 		}
-
 		if ok {
 			fmt.Printf("%d\t%v\t(%v)\n", pr.Pid(), pr.Executable(), name)
 		}
