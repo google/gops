@@ -14,7 +14,7 @@ import (
 	gosignal "os/signal"
 	"runtime"
 
-	"hello/gops/agent/signal"
+	"hello/gops/signal"
 )
 
 func init() {

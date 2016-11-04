@@ -13,8 +13,8 @@ import (
 	"net"
 	"os"
 
-	"hello/gops/agent/signal"
 	"hello/gops/internal/objfile"
+	"hello/gops/signal"
 
 	ps "github.com/keybase/go-ps"
 )
