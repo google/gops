@@ -8,11 +8,13 @@ package agent
 
 import (
 	"fmt"
-	"hello/gops/agent/signal"
 	"log"
 	"net"
 	"os"
+	gosignal "os/signal"
 	"runtime"
+
+	"hello/gops/agent/signal"
 )
 
 func init() {
@@ -21,7 +23,16 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// TODO(jbd): cleanup the socket on shutdown.
+
+	c := make(chan os.Signal, 1)
+	gosignal.Notify(c, os.Interrupt)
+	go func() {
+		// cleanup the socket on shutdown.
+		<-c
+		os.Remove(sock)
+		os.Exit(1)
+	}()
+
 	go func() {
 		buf := make([]byte, 1)
 		for {
