@@ -66,9 +66,9 @@ func main() {
 	}
 
 	if *gcstats {
-		out, err := cmd(signal.GC)
+		out, err := cmd(signal.GCStats)
 		exit(err)
-		fmt.Println(out)
+		fmt.Printf(out)
 	}
 
 }
