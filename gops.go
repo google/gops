@@ -20,15 +20,20 @@ import (
 )
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
+
     gops              Lists all Go processes currently running.
     gops [options...] See the section below.
 
-Options: (All requires the agent and the -p=<pid> flag.)
+Options: 
     -stack    Prints the stack trace.
     -gc       Runs the garbage collector and blocks until successful.
     -gcstats  Prints the garbage collection stats.
     -version  Prints the Go version used to build the program.
+
+All options require the agent and the -p=<pid> flag.
 `
+
+// TODO(jbd): add link that explains the use of agent.
 
 var (
 	pid     = flag.Int("p", -1, "")
