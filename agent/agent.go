@@ -12,6 +12,8 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"runtime/debug"
+	"time"
 )
 
 const (
@@ -20,6 +22,9 @@ const (
 
 	// GC runs the garbage collector.
 	GC = byte(0x2)
+
+	// GCStats prints GC stats.
+	GCStats = byte(0x3)
 )
 
 func init() {
@@ -61,6 +66,14 @@ func handle(conn net.Conn, msg []byte) error {
 		runtime.GC()
 		_, err := conn.Write([]byte("ok"))
 		return err
+	case GCStats:
+		var stats debug.GCStats
+		debug.ReadGCStats(&stats)
+		fmt.Fprintf(conn, "Num GC: %v\n", stats.NumGC)
+		if stats.NumGC > 0 {
+			fmt.Fprintf(conn, "Last GC: %v ago\n", time.Now().Sub(stats.LastGC))
+			fmt.Fprintf(conn, "Total pause: %v\n", stats.PauseTotal)
+		}
 	}
 	return nil
 }
