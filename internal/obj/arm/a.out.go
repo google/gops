@@ -30,7 +30,7 @@
 
 package arm
 
-import "cmd/internal/obj"
+import "github.com/google/gops/internal/obj"
 
 //go:generate go run ../stringer.go -i $GOFILE -o anames.go -p arm
 

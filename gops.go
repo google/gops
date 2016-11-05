@@ -13,8 +13,9 @@ import (
 	"net"
 	"os"
 
-	"hello/gops/internal/objfile"
-	"hello/gops/signal"
+	"github.com/google/gops/signal"
+
+	"github.com/google/gops/internal/objfile"
 
 	ps "github.com/keybase/go-ps"
 )

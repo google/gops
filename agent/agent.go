@@ -14,10 +14,12 @@ import (
 	gosignal "os/signal"
 	"runtime"
 
-	"hello/gops/signal"
+	"github.com/google/gops/signal"
 )
 
 func init() {
+	// TODO(jbd): Expose these endpoints on HTTP, so Windows user
+	//
 	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
 	l, err := net.Listen("unix", sock)
 	if err != nil {

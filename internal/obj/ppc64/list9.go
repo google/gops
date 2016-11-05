@@ -30,8 +30,9 @@
 package ppc64
 
 import (
-	"cmd/internal/obj"
 	"fmt"
+
+	"github.com/google/gops/internal/obj"
 )
 
 func init() {

@@ -32,11 +32,12 @@ package x86
 
 import (
 	"fmt"
-	"hello/gops/internal/obj"
-	"hello/gops/internal/sys"
 	"log"
 	"math"
 	"strings"
+
+	"github.com/google/gops/internal/obj"
+	"github.com/google/gops/internal/sys"
 )
 
 func CanUse1InsnTLS(ctxt *obj.Link) bool {

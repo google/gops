@@ -5,7 +5,7 @@
 package s390x
 
 import (
-	"cmd/internal/obj"
+	"github.com/google/gops/internal/obj"
 )
 
 // This file contains utility functions for use when

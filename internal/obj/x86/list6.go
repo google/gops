@@ -31,8 +31,9 @@
 package x86
 
 import (
-	"cmd/internal/obj"
 	"fmt"
+
+	"github.com/google/gops/internal/obj"
 )
 
 var Register = []string{

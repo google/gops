@@ -112,11 +112,12 @@ package obj
 import (
 	"bufio"
 	"fmt"
-	"hello/gops/internal/dwarf"
-	"hello/gops/internal/sys"
 	"log"
 	"path/filepath"
 	"sort"
+
+	"github.com/google/gops/internal/dwarf"
+	"github.com/google/gops/internal/sys"
 )
 
 // The Go and C compilers, and the assembler, call writeobj to write

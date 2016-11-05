@@ -30,10 +30,11 @@
 package s390x
 
 import (
-	"cmd/internal/obj"
 	"log"
 	"math"
 	"sort"
+
+	"github.com/google/gops/internal/obj"
 )
 
 // instruction layout.

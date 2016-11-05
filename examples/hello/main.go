@@ -7,7 +7,7 @@ package main
 import (
 	"time"
 
-	_ "hello/gops/agent"
+	_ "github.com/google/gops/agent"
 )
 
 func main() {

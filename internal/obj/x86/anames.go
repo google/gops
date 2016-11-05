@@ -3,7 +3,7 @@
 
 package x86
 
-import "cmd/internal/obj"
+import "github.com/google/gops/internal/obj"
 
 var Anames = []string{
 	obj.A_ARCHSPECIFIC: "AAA",

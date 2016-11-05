@@ -33,7 +33,8 @@ package obj
 import (
 	"bufio"
 	"fmt"
-	"hello/gops/internal/sys"
+
+	"github.com/google/gops/internal/sys"
 )
 
 // An Addr is an argument to an instruction.

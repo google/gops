@@ -30,10 +30,11 @@
 package mips
 
 import (
-	"cmd/internal/obj"
 	"fmt"
 	"log"
 	"sort"
+
+	"github.com/google/gops/internal/obj"
 )
 
 // Instruction layout.

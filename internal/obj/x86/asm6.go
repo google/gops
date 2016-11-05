@@ -31,11 +31,12 @@
 package x86
 
 import (
-	"cmd/internal/obj"
 	"encoding/binary"
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/google/gops/internal/obj"
 )
 
 // Instruction layout.

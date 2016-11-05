@@ -31,8 +31,9 @@
 package arm64
 
 import (
-	"cmd/internal/obj"
 	"fmt"
+
+	"github.com/google/gops/internal/obj"
 )
 
 var strcond = [16]string{

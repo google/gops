@@ -31,9 +31,10 @@ package ppc64
 
 import (
 	"fmt"
-	"hello/gops/internal/obj"
-	"hello/gops/internal/sys"
 	"math"
+
+	"github.com/google/gops/internal/obj"
+	"github.com/google/gops/internal/sys"
 )
 
 func progedit(ctxt *obj.Link, p *obj.Prog) {

@@ -30,11 +30,12 @@
 package ppc64
 
 import (
-	"cmd/internal/obj"
 	"encoding/binary"
 	"fmt"
 	"log"
 	"sort"
+
+	"github.com/google/gops/internal/obj"
 )
 
 // Instruction layout.

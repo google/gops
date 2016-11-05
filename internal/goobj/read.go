@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"hello/gops/internal/obj"
+	"github.com/google/gops/internal/obj"
 )
 
 // A SymKind describes the kind of memory represented by a symbol.

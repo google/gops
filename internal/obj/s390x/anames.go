@@ -3,7 +3,7 @@
 
 package s390x
 
-import "hello/gops/internal/obj"
+import "github.com/google/gops/internal/obj"
 
 var Anames = []string{
 	obj.A_ARCHSPECIFIC: "ADD",

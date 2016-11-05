@@ -31,11 +31,12 @@
 package arm64
 
 import (
-	"cmd/internal/obj"
 	"fmt"
 	"log"
 	"math"
 	"sort"
+
+	"github.com/google/gops/internal/obj"
 )
 
 const (

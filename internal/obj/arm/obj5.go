@@ -32,10 +32,11 @@ package arm
 
 import (
 	"fmt"
-	"hello/gops/internal/obj"
-	"hello/gops/internal/sys"
 	"log"
 	"math"
+
+	"github.com/google/gops/internal/obj"
+	"github.com/google/gops/internal/sys"
 )
 
 var progedit_tlsfallback *obj.LSym
