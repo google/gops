@@ -130,8 +130,7 @@ func isGo(filename string) (ok bool, err error) {
 		return false, err
 	}
 
-	// TODO(jbd): find a faster way to determine Go programs
-	// looping over the symbols is a joke.
+	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
 			return true, nil
