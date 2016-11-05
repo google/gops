@@ -75,6 +75,7 @@ func main() {
 		exitIfError(err)
 		fmt.Printf(out)
 	}
+	// TODO(jbd): kill by name?
 }
 
 func cmd(c byte) (string, error) {
@@ -111,6 +112,7 @@ func goProcesses() {
 			continue
 		}
 		if ok {
+			// TODO(jbd): List if the program is running the agent.
 			fmt.Printf("%d\t%v\t(%v)\n", pr.Pid(), pr.Executable(), name)
 		}
 	}
