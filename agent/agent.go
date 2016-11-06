@@ -18,8 +18,8 @@ import (
 )
 
 func init() {
-	// TODO(jbd): Expose these endpoints on HTTP, so Windows user
-	//
+	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
+	// the agent on Windows systems.
 	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
 	l, err := net.Listen("unix", sock)
 	if err != nil {
