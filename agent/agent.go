@@ -58,7 +58,7 @@ func init() {
 
 func handle(conn net.Conn, msg []byte) error {
 	switch msg[0] {
-	case signal.Stack:
+	case signal.StackTrace:
 		buf := make([]byte, 1<<16)
 		n := runtime.Stack(buf, true)
 		_, err := conn.Write(buf[:n])

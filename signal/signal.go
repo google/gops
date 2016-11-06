@@ -5,8 +5,8 @@
 package signal
 
 const (
-	// Stack represents a command to print stack trace.
-	Stack = byte(0x1)
+	// StackTrace represents a command to print stack trace.
+	StackTrace = byte(0x1)
 
 	// GC runs the garbage collector.
 	GC = byte(0x2)

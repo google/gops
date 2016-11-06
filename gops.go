@@ -57,7 +57,7 @@ func main() {
 		usage()
 	}
 	if *stack {
-		out, err := cmd(signal.Stack)
+		out, err := cmd(signal.StackTrace)
 		exitIfError(err)
 		fmt.Println(out)
 	}
