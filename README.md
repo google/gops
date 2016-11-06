@@ -2,7 +2,6 @@
 
 gops is a command to list and diagnose Go processes currently running on your system.
 
-
 ```
 $ gops
 983     uplink-soecks	(/usr/local/bin/uplink-soecks)
@@ -22,6 +21,7 @@ For processes that imports the diagnostics agent, the tool can report
 additional information such as the current stack trace, Go version, memory
 stats, etc.
 
+Diagnostics features are only supported on Unix-like systems for now.
 
 ### -stack
 Prints the stack trace for the process identified with the specified PID.
