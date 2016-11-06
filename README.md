@@ -5,9 +5,9 @@ gops is a command to list and diagnise Go processes currently running in your sy
 
 ```
 $ gops
-983	uplink-soecks	(/usr/local/bin/uplink-soecks)
-52697	gops	(/Users/jbd/bin/gops)
-51130	gocode	(/Users/jbd/bin/gocode)
+983     uplink-soecks	(/usr/local/bin/uplink-soecks)
+52697   gops	(/Users/jbd/bin/gops)
+51130   gocode	(/Users/jbd/bin/gocode)
 ```
 
 ## Installation
