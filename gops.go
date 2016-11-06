@@ -26,10 +26,10 @@ const helpText = `Usage: gops is a tool to list and diagnose Go processes.
     gops [options...] See the section below.
 
 Options: 
-    -stack    Prints the stack trace.
-    -gc       Runs the garbage collector and blocks until successful.
-    -gcstats  Prints the garbage collection stats.
-    -version  Prints the Go version used to build the program.
+    -stack     Prints the stack trace.
+    -gc        Runs the garbage collector and blocks until successful.
+    -memstats  Prints the garbage collection stats.
+    -version   Prints the Go version used to build the program.
 
 All options require the agent and the -p=<pid> flag.
 `
