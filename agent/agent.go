@@ -8,7 +8,6 @@ package agent
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	gosignal "os/signal"
@@ -17,13 +16,13 @@ import (
 	"github.com/google/gops/signal"
 )
 
-func init() {
+func Listen() error {
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
 	// the agent on Windows systems.
 	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
 	l, err := net.Listen("unix", sock)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	c := make(chan os.Signal, 1)
@@ -54,6 +53,7 @@ func init() {
 			fd.Close()
 		}
 	}()
+	return err
 }
 
 func handle(conn net.Conn, msg []byte) error {

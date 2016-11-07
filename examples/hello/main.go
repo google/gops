@@ -5,11 +5,15 @@
 package main
 
 import (
+	"log"
 	"time"
 
-	_ "github.com/google/gops/agent"
+	"github.com/google/gops/agent"
 )
 
 func main() {
+	if err := agent.Listen(); err != nil {
+		log.Fatal(err)
+	}
 	time.Sleep(time.Hour)
 }
