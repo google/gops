@@ -16,7 +16,9 @@ import (
 	"github.com/google/gops/signal"
 )
 
-func Listen() error {
+// Start stars the gops agent on a host process. Once agent started,
+// users can use the advanced gops features.
+func Start() error {
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
 	// the agent on Windows systems.
 	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
