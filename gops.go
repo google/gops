@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/gops/internal/objfile"
 
@@ -83,8 +84,8 @@ func processes() {
 	}
 }
 
-func isGo(filename string) (ok bool, err error) {
-	obj, err := objfile.Open(filename)
+func isGo(executable string) (ok bool, err error) {
+	obj, err := objfile.Open(executable)
 	if err != nil {
 		return false, err
 	}
@@ -98,6 +99,9 @@ func isGo(filename string) (ok bool, err error) {
 	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
+			return true, nil
+		}
+		if strings.HasPrefix(s.Name, "github.com/google/gops") {
 			return true, nil
 		}
 	}
