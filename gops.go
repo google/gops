@@ -8,12 +8,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net"
 	"os"
-
-	"github.com/google/gops/signal"
 
 	"github.com/google/gops/internal/objfile"
 
@@ -22,79 +18,45 @@ import (
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
 
-    gops              Lists all Go processes currently running.
-    gops [options...] See the section below.
+    gops                  Lists all Go processes currently running.
+    gops [cmd] -p=<pid>   See the section below.
 
-Options: 
-    -stack     Prints the stack trace.
-    -gc        Runs the garbage collector and blocks until successful.
-    -memstats  Prints the garbage collection stats.
-    -version   Prints the Go version used to build the program.
+Commands: 
+    stack     Prints the stack trace.
+    gc        Runs the garbage collector and blocks until successful.
+    memstats  Prints the garbage collection stats.
+    version   Prints the Go version used to build the program.
 
-All options require the agent and the -p=<pid> flag.
+All commands require the agent running on the Go process.
 `
 
 // TODO(jbd): add link that explains the use of agent.
 
-var (
-	pid      = flag.Int("p", -1, "")
-	stack    = flag.Bool("stack", false, "")
-	gc       = flag.Bool("gc", false, "")
-	memstats = flag.Bool("memstats", false, "")
-	version  = flag.Bool("version", false, "")
-	help     = flag.Bool("help", false, "")
-)
-
 func main() {
-	flag.Usage = usage
-	flag.Parse()
-
 	if len(os.Args) < 2 {
-		goProcesses()
+		processes()
 		return
 	}
-	if *pid == -1 || *help {
-		usage()
+
+	cmd := os.Args[1]
+	fn, ok := cmds[cmd]
+	if !ok {
+		usage("unknown subcommand")
 	}
-	if *stack {
-		out, err := cmd(signal.StackTrace)
-		exitIfError(err)
-		fmt.Println(out)
+
+	pid := flag.Int("p", -1, "")
+	flag.CommandLine.Parse(os.Args[2:])
+	if *pid == -1 {
+		usage("missing -p=<pid> flag")
 	}
-	if *gc {
-		_, err := cmd(signal.GC)
-		exitIfError(err)
+
+	if err := fn(*pid); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
 	}
-	if *memstats {
-		out, err := cmd(signal.MemStats)
-		exitIfError(err)
-		fmt.Printf(out)
-	}
-	if *version {
-		out, err := cmd(signal.Version)
-		exitIfError(err)
-		fmt.Printf(out)
-	}
-	// TODO(jbd): kill by name?
 }
 
-func cmd(c byte) (string, error) {
-	sock := fmt.Sprintf("/tmp/gops%d.sock", *pid)
-	conn, err := net.Dial("unix", sock)
-	if err != nil {
-		return "", err
-	}
-	if _, err := conn.Write([]byte{c}); err != nil {
-		return "", err
-	}
-	all, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return "", err
-	}
-	return string(all), nil
-}
-
-func goProcesses() {
+func processes() {
 	pss, err := ps.Processes()
 	if err != nil {
 		log.Fatal(err)
@@ -142,15 +104,10 @@ func isGo(filename string) (ok bool, err error) {
 	return false, nil
 }
 
-func usage() {
-	fmt.Fprintf(os.Stderr, "%v\n", helpText)
-	os.Exit(1)
-}
-
-func exitIfError(err error) {
-	if err == nil {
-		return
+func usage(msg string) {
+	if msg != "" {
+		fmt.Printf("gops: %v\n", msg)
 	}
-	fmt.Fprintf(os.Stderr, "%v\n", err)
+	fmt.Fprintf(os.Stderr, "%v\n", helpText)
 	os.Exit(1)
 }
