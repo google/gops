@@ -45,13 +45,14 @@ func main() {
 		usage("unknown subcommand")
 	}
 
-	pid := flag.Int("p", -1, "")
+	var pid int
+	flag.IntVar(&pid, "p", -1, "")
 	flag.CommandLine.Parse(os.Args[2:])
-	if *pid == -1 {
+	if pid == -1 {
 		usage("missing -p=<pid> flag")
 	}
 
-	if err := fn(*pid); err != nil {
+	if err := fn(pid); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
