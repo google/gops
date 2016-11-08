@@ -23,10 +23,10 @@ stats, etc.
 
 Diagnostics features are only supported on Unix-like systems for now.
 
-### -stack
+### stack
 Prints the stack trace for the process identified with the specified PID.
 ```
-$ gops -stack -p=<pid>
+$ gops stack -p=<pid>
 goroutine 35 [running]:
 github.com/google/gops/agent.handle(0x11897a0, 0xc4200d0000, 0xc4200c6000, 0x1, 0x1, 0x0, 0x0)
 	/Users/jbd/src/github.com/google/gops/agent/agent.go:63 +0x182
@@ -72,20 +72,20 @@ created by github.com/google/gops/agent.init.1
 	/Users/jbd/src/github.com/google/gops/agent/agent.go:36 +0x214
 ```
 
-## -gc
+## gc
 
 Runs garbage collector and blocks until the garbage collection is completed.
 
 ```
-$ gops -gc -p=<pid>
+$ gops gc -p=<pid>
 ```
 
-## -memstats
+## memstats
 
 Reports the memory stats from the targetted Go process.
 
 ```
-$ gops -memstats -p=<pid>
+$ gops memstats -p=<pid>
 alloc: 219792
 total-alloc: 219792
 sys: 2822144
@@ -108,11 +108,11 @@ enable-gc: true
 debug-gc: false
 ```
 
-## -version
+## version
 
 Reports the Go version used to build the target program.
 
 ```
-$ gops -version -p=<pid>
+$ gops version -p=<pid>
 devel +4141054 Thu Nov 3 17:42:01 2016 +0000
 ```
