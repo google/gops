@@ -94,7 +94,6 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
 	case signal.Version:
 		fmt.Fprintf(conn, "%v\n", runtime.Version())
-
 	}
 	return nil
 }
