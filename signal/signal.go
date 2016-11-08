@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package signal contains signals used to communicate to the gops agents.
 package signal
 
 const (
