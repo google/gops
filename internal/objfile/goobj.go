@@ -6,6 +6,9 @@
 
 package objfile
 
+/*
+
+
 import (
 	"debug/dwarf"
 	"debug/gosym"
@@ -154,3 +157,4 @@ func (f *goobjFile) loadAddress() (uint64, error) {
 func (f *goobjFile) dwarf() (*dwarf.Data, error) {
 	return nil, errors.New("no DWARF data in go object file")
 }
+*/

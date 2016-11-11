@@ -52,7 +52,7 @@ type RelocStringer interface {
 
 var openers = []func(*os.File) (rawFile, error){
 	openElf,
-	openGoobj,
+	// openGoobj,
 	openMacho,
 	openPE,
 	openPlan9,
