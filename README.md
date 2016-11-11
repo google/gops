@@ -23,7 +23,7 @@ stats, etc.
 
 In order to start the diagnostics agent, see the [hello example](https://github.com/google/gops/blob/master/examples/hello/main.go).
 
-Please not that diagnostics features are only supported on Unix-like systems for now.
+Please note that diagnostics features are only supported on Unix-like systems for now.
 We are planning to add Windows support in the near future.
 
 ### stack
