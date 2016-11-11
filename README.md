@@ -17,11 +17,12 @@ $ go get -u github.com/google/gops
 
 ## Diagnostics
 
-For processes that imports the diagnostics agent, the tool can report
+For processes that contains the diagnostics agent, gops can report
 additional information such as the current stack trace, Go version, memory
 stats, etc.
 
 Diagnostics features are only supported on Unix-like systems for now.
+We are planning to add Windows support in the near future.
 
 ### stack
 Prints the stack trace for the process identified with the specified PID.
