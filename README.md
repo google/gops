@@ -21,7 +21,9 @@ For processes that contains the diagnostics agent, gops can report
 additional information such as the current stack trace, Go version, memory
 stats, etc.
 
-Diagnostics features are only supported on Unix-like systems for now.
+In order to start the diagnostics agent, see the [hello example](https://github.com/google/gops/blob/master/examples/hello/main.go).
+
+Please not that diagnostics features are only supported on Unix-like systems for now.
 We are planning to add Windows support in the near future.
 
 ### stack
