@@ -52,7 +52,7 @@ type RelocStringer interface {
 
 var openers = []func(*os.File) (rawFile, error){
 	openElf,
-	// openGoobj,
+	// openGoobj, // TODO(jbd): Bring it back when 1.8 is popular.
 	openMacho,
 	openPE,
 	openPlan9,
