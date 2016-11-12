@@ -39,6 +39,9 @@ func main() {
 	}
 
 	cmd := os.Args[1]
+	if cmd == "help" {
+		usage("")
+	}
 	fn, ok := cmds[cmd]
 	if !ok {
 		usage("unknown subcommand")
