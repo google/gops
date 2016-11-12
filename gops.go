@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/google/gops/internal/objfile"
 
@@ -100,9 +99,6 @@ func isGo(executable string) (ok bool, err error) {
 	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
-			return true, nil
-		}
-		if strings.HasPrefix(s.Name, "github.com/google/gops") {
 			return true, nil
 		}
 	}
