@@ -18,6 +18,10 @@ import (
 
 // Start stars the gops agent on a host process. Once agent started,
 // users can use the advanced gops features.
+//
+// Note: The agent exposes an endpoint via a UNIX socket that can be used by
+// any program on the system. Review your security requirements before
+// starting the agent.
 func Start() error {
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
 	// the agent on Windows systems.
