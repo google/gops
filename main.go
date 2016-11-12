@@ -67,6 +67,10 @@ func processes() {
 	}
 	var undetermined int
 	for _, pr := range pss {
+		if pr.Pid() == 0 {
+			// ignore system process
+			continue
+		}
 		name, err := pr.Path()
 		if err != nil {
 			undetermined++
