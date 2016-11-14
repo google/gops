@@ -78,6 +78,7 @@ func pprof(pid int) error {
 	if err := ioutil.WriteFile(tmpfile.Name(), []byte(out), 0); err != nil {
 		return err
 	}
+	// TODO(jbd): pass binary as an arg to symbolize the profile.
 	cmd := exec.Command("go", "tool", "pprof", tmpfile.Name())
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
