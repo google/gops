@@ -89,24 +89,24 @@ Reports the memory stats from the targetted Go process.
 
 ```
 $ gops memstats -p=<pid>
-alloc: 219792
-total-alloc: 219792
-sys: 2822144
-lookups: 9
-mallocs: 336
-frees: 8
-heap-alloc: 219792
-heap-sys: 1605632
-heap-idle: 1015808
-heap-in-use: 589824
-heap-released: 0
-heap-objects: 328
-stack-in-use: 491520
-stack-sys: 491520
-next-gc: 4473924
-last-gc: 0 ns ago
-gc-pause: 0 ns
-num-gc: 0
+alloc: 1265448 bytes
+total-alloc: 58395932600 bytes
+sys: 12196088 bytes
+lookups: 15
+mallocs: 1794071
+frees: 1793640
+heap-alloc: 1265448 bytes
+heap-sys: 7569408 bytes
+heap-idle: 6012928 bytes
+heap-in-use: 1556480 bytes
+heap-released: 16384 bytes
+heap-objects: 431
+stack-in-use: 819200 bytes
+stack-sys: 819200 bytes
+next-gc: when heap-alloc >= 4194304 bytes
+last-gc: 1479100860500328811 ns ago
+gc-pause: 856980908 ns
+num-gc: 14274
 enable-gc: true
 debug-gc: false
 ```
