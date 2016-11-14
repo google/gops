@@ -9,6 +9,7 @@ import (
 	"os/exec"
 
 	"github.com/google/gops/signal"
+	ps "github.com/keybase/go-ps"
 )
 
 var cmds = map[string](func(pid int) error){
@@ -74,12 +75,20 @@ func pprof(pid int) error {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
-
 	if err := ioutil.WriteFile(tmpfile.Name(), []byte(out), 0); err != nil {
 		return err
 	}
-	// TODO(jbd): pass binary as an arg to symbolize the profile.
-	cmd := exec.Command("go", "tool", "pprof", tmpfile.Name())
+	process, err := ps.FindProcess(pid)
+	if err != nil {
+		// TODO(jbd): add context to the error
+		return err
+	}
+	binary, err := process.Path()
+	if err != nil {
+		// TODO(jbd): add context to the error
+		return err
+	}
+	cmd := exec.Command("go", "tool", "pprof", binary, tmpfile.Name())
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
