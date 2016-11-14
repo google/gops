@@ -21,12 +21,17 @@ const helpText = `Usage: gops is a tool to list and diagnose Go processes.
     gops                  Lists all Go processes currently running.
     gops [cmd] -p=<pid>   See the section below.
 
-Commands: 
-    stack     Prints the stack trace.
-    gc        Runs the garbage collector and blocks until successful.
-    memstats  Prints the garbage collection stats.
-    version   Prints the Go version used to build the program.
-    help      Prints this help text.
+Commands:
+    gc          Runs the garbage collector and blocks until successful.
+
+    stack       Prints the stack trace.
+    memstats    Prints the garbage collection stats.
+    version     Prints the Go version used to build the program.
+
+    pprof-heap  Reads the heap profile and launches "go tool pprof".
+    pprof-mem   Reads the CPU profile and launches "go tool pprof".
+
+    help        Prints this help text.
 
 All commands require the agent running on the Go process.
 `
