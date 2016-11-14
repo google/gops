@@ -17,4 +17,10 @@ const (
 
 	// Version prints the Go version.
 	Version = byte(0x4)
+
+	// HeapProfile starts `go tool pprof`` with the current memory profile.
+	HeapProfile = byte(0x5)
+
+	// CPUProfile starts `go tool pprof` with the current CPU profile
+	CPUProfile = byte(0x6)
 )

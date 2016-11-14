@@ -5,6 +5,10 @@ import (
 	"io/ioutil"
 	"net"
 
+	"os/exec"
+
+	"os"
+
 	"github.com/google/gops/signal"
 )
 
@@ -13,6 +17,7 @@ var cmds = map[string](func(pid int) error){
 	"gc":       gc,
 	"memstats": memStats,
 	"version":  version,
+	"pprof":    pprof,
 }
 
 func stackTrace(pid int) error {
@@ -45,6 +50,26 @@ func version(pid int) error {
 	}
 	fmt.Printf(out)
 	return nil
+}
+
+func pprof(pid int) error {
+	out, err := cmd(pid, signal.HeapProfile)
+	if err != nil {
+		return err
+	}
+	tmpfile, err := ioutil.TempFile("", "heap-profile")
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(tmpfile.Name(), []byte(out), 0); err != nil {
+		return err
+	}
+	cmd := exec.Command("go", "tool", "pprof", tmpfile.Name())
+	cmd.Env = os.Environ()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func cmd(pid int, c byte) (string, error) {

@@ -12,6 +12,7 @@ import (
 	"os"
 	gosignal "os/signal"
 	"runtime"
+	"runtime/pprof"
 
 	"github.com/google/gops/signal"
 )
@@ -30,6 +31,7 @@ func Start() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(sock)
 
 	c := make(chan os.Signal, 1)
 	gosignal.Notify(c, os.Interrupt)
@@ -98,6 +100,10 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
 	case signal.Version:
 		fmt.Fprintf(conn, "%v\n", runtime.Version())
+	case signal.HeapProfile:
+		pprof.Lookup("heap").WriteTo(conn, 1)
+	case signal.CPUProfile:
+		panic("not implemented")
 	}
 	return nil
 }
