@@ -13,11 +13,12 @@ import (
 )
 
 var cmds = map[string](func(pid int) error){
-	"stack":    stackTrace,
-	"gc":       gc,
-	"memstats": memStats,
-	"version":  version,
-	"pprof":    pprof,
+	"stack":      stackTrace,
+	"gc":         gc,
+	"memstats":   memStats,
+	"version":    version,
+	"pprof-heap": pprofHeap,
+	"pprof-cpu":  pprofCPU,
 }
 
 func stackTrace(pid int) error {
@@ -52,18 +53,17 @@ func version(pid int) error {
 	return nil
 }
 
-func pprof(pid int) error {
-	var s byte
-	switch {
-	case *cpu:
-		fmt.Println("Profiling CPU now, will take 30 secs...")
-		s = signal.CPUProfile
-	case *heap:
-		s = signal.HeapProfile
-	default:
-		return errors.New("unknown pprof profile")
-	}
-	out, err := cmd(pid, s)
+func pprofHeap(pid int) error {
+	return pprof(pid, signal.HeapProfile)
+}
+
+func pprofCPU(pid int) error {
+	fmt.Println("Profiling CPU now, will take 30 secs...")
+	return pprof(pid, signal.CPUProfile)
+}
+
+func pprof(pid int, p byte) error {
+	out, err := cmd(pid, p)
 	if err != nil {
 		return err
 	}
