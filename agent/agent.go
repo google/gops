@@ -108,6 +108,10 @@ func handle(conn net.Conn, msg []byte) error {
 		}
 		time.Sleep(30 * time.Second)
 		pprof.StopCPUProfile()
+	case signal.Vitals:
+		fmt.Fprintf(conn, "goroutines: %v\n", runtime.NumGoroutine())
+		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
+		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
 	}
 	return nil
 }
