@@ -107,15 +107,22 @@ func vitals(pid int) error {
 	return nil
 }
 
-func cmd(pid int, c byte) (string, error) {
+func getport(pid int) (string, error) {
 	portfile := fmt.Sprintf("%s/.gops/.%d", os.Getenv("HOME"), pid)
 	b, err := ioutil.ReadFile(portfile)
 	if err != nil {
 		return "", err
 	}
 	port := strings.TrimSpace(string(b))
-	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
+	return port, nil
+}
 
+func cmd(pid int, c byte) (string, error) {
+	port, err := getport(pid)
+	if err != nil {
+		return "", err
+	}
+	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
 	if err != nil {
 		return "", err
 	}

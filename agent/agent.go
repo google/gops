@@ -27,12 +27,9 @@ import (
 // any program on the system. Review your security requirements before
 // starting the agent.
 func Start() error {
-	gopsdir := fmt.Sprintf("%s/.gops", os.Getenv("HOME"))
-	if _, err := os.Stat(gopsdir); os.IsNotExist(err) {
-		err = os.Mkdir(gopsdir, os.ModePerm)
-		if err != nil {
-			return err
-		}
+	gopsdir, err := configdir()
+	if err != nil {
+		return err
 	}
 
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
@@ -77,6 +74,17 @@ func Start() error {
 		}
 	}()
 	return err
+}
+
+func configdir() (string, error) {
+	gopsdir := fmt.Sprintf("%s/.gops", os.Getenv("HOME"))
+	if _, err := os.Stat(gopsdir); os.IsNotExist(err) {
+		err = os.Mkdir(gopsdir, os.ModePerm)
+		if err != nil {
+			return "", err
+		}
+	}
+	return gopsdir, nil
 }
 
 func handle(conn net.Conn, msg []byte) error {
