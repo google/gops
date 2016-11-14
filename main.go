@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/gops/internal/objfile"
 
@@ -34,7 +35,7 @@ Commands:
     help        Prints this help text.
 
 All commands require the agent running on the Go process.
-`
+Symbol "*" indicates the process runs the agent.`
 
 // TODO(jbd): add link that explains the use of agent.
 
@@ -77,19 +78,22 @@ func processes() {
 			// ignore system process
 			continue
 		}
-		name, err := pr.Path()
+		path, err := pr.Path()
 		if err != nil {
 			undetermined++
 			continue
 		}
-		ok, err := isGo(name)
+		ok, agent, err := isGo(pr.Pid(), path)
 		if err != nil {
 			// TODO(jbd): worth to report the number?
 			continue
 		}
 		if ok {
-			// TODO(jbd): List if the program is running the agent.
-			fmt.Printf("%d\t%v\t(%v)\n", pr.Pid(), pr.Executable(), name)
+			fmt.Printf("%d", pr.Pid())
+			if agent {
+				fmt.Printf("*")
+			}
+			fmt.Printf("\t%v\t(%v)\n", pr.Executable(), path)
 		}
 	}
 	if undetermined > 0 {
@@ -97,25 +101,28 @@ func processes() {
 	}
 }
 
-func isGo(executable string) (ok bool, err error) {
-	obj, err := objfile.Open(executable)
+func isGo(pid int, path string) (ok bool, agent bool, err error) {
+	obj, err := objfile.Open(path)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 	defer obj.Close()
 
 	symbols, err := obj.Symbols()
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 
 	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
-			return true, nil
+			ok = true
+		}
+		if strings.HasPrefix(s.Name, "github.com/google/gops/agent") {
+			agent = true
 		}
 	}
-	return false, nil
+	return ok, agent, nil
 }
 
 func usage(msg string) {
