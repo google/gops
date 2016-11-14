@@ -26,6 +26,7 @@ Commands:
     gc        Runs the garbage collector and blocks until successful.
     memstats  Prints the garbage collection stats.
     version   Prints the Go version used to build the program.
+    help      Prints this help text.
 
 All commands require the agent running on the Go process.
 `
