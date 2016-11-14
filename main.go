@@ -32,6 +32,11 @@ All commands require the agent running on the Go process.
 
 // TODO(jbd): add link that explains the use of agent.
 
+var (
+	heap = flag.Bool("heap", false, "enables heap profile")
+	cpu  = flag.Bool("cpu", false, "enables CPU profile")
+)
+
 func main() {
 	if len(os.Args) < 2 {
 		processes()

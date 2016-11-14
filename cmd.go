@@ -1,13 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
-
-	"os/exec"
-
 	"os"
+	"os/exec"
 
 	"github.com/google/gops/signal"
 )
@@ -53,14 +52,29 @@ func version(pid int) error {
 }
 
 func pprof(pid int) error {
-	out, err := cmd(pid, signal.HeapProfile)
+	var s byte
+	switch {
+	case *cpu:
+		fmt.Println("Profiling CPU now, will take 30 secs...")
+		s = signal.CPUProfile
+	case *heap:
+		s = signal.HeapProfile
+	default:
+		return errors.New("unknown pprof profile")
+	}
+	out, err := cmd(pid, s)
 	if err != nil {
 		return err
+	}
+	if out == "" {
+		return errors.New("failed to read the profile")
 	}
 	tmpfile, err := ioutil.TempFile("", "heap-profile")
 	if err != nil {
 		return err
 	}
+	defer os.Remove(tmpfile.Name())
+
 	if err := ioutil.WriteFile(tmpfile.Name(), []byte(out), 0); err != nil {
 		return err
 	}

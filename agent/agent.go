@@ -13,6 +13,7 @@ import (
 	gosignal "os/signal"
 	"runtime"
 	"runtime/pprof"
+	"time"
 
 	"github.com/google/gops/signal"
 )
@@ -102,7 +103,11 @@ func handle(conn net.Conn, msg []byte) error {
 	case signal.HeapProfile:
 		pprof.Lookup("heap").WriteTo(conn, 1)
 	case signal.CPUProfile:
-		panic("not implemented")
+		if err := pprof.StartCPUProfile(conn); err != nil {
+			return nil
+		}
+		time.Sleep(30 * time.Second)
+		pprof.StopCPUProfile()
 	}
 	return nil
 }
