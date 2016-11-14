@@ -19,6 +19,7 @@ var cmds = map[string](func(pid int) error){
 	"version":    version,
 	"pprof-heap": pprofHeap,
 	"pprof-cpu":  pprofCPU,
+	"vitals":     vitals,
 }
 
 func stackTrace(pid int) error {
@@ -94,6 +95,15 @@ func pprof(pid int, p byte) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func vitals(pid int) error {
+	out, err := cmd(pid, signal.Vitals)
+	if err != nil {
+		return err
+	}
+	fmt.Printf(out)
+	return nil
 }
 
 func cmd(pid int, c byte) (string, error) {
