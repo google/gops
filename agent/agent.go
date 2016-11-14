@@ -112,6 +112,7 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "goroutines: %v\n", runtime.NumGoroutine())
 		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
 		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
+		fmt.Fprintf(conn, "OS threads: %v\n", pprof.Lookup("threadcreate").Count())
 	}
 	return nil
 }
