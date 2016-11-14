@@ -8,11 +8,13 @@ package agent
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	gosignal "os/signal"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/google/gops/signal"
@@ -21,14 +23,27 @@ import (
 // Start stars the gops agent on a host process. Once agent started,
 // users can use the advanced gops features.
 //
-// Note: The agent exposes an endpoint via a UNIX socket that can be used by
+// Note: The agent exposes an endpoint via a TCP connection that can be used by
 // any program on the system. Review your security requirements before
 // starting the agent.
 func Start() error {
+	gopsdir := fmt.Sprintf("%s/.gops", os.Getenv("HOME"))
+	if _, err := os.Stat(gopsdir); os.IsNotExist(err) {
+		err = os.Mkdir(gopsdir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
 	// the agent on Windows systems.
-	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
-	l, err := net.Listen("unix", sock)
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return err
+	}
+	port := l.Addr().(*net.TCPAddr).Port
+	portfile := fmt.Sprintf("%s/.%d", gopsdir, os.Getpid())
+	err = ioutil.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -38,7 +53,7 @@ func Start() error {
 	go func() {
 		// cleanup the socket on shutdown.
 		<-c
-		os.Remove(sock)
+		os.Remove(portfile)
 		os.Exit(1)
 	}()
 
