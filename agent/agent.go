@@ -31,7 +31,6 @@ func Start() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(sock)
 
 	c := make(chan os.Signal, 1)
 	gosignal.Notify(c, os.Interrupt)
