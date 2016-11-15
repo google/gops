@@ -21,7 +21,7 @@ import (
 	"github.com/google/gops/signal"
 )
 
-// Start stars the gops agent on a host process. Once agent started,
+// Start starts the gops agent on a host process. Once agent started,
 // users can use the advanced gops features.
 //
 // Note: The agent exposes an endpoint via a TCP connection that can be used by
