@@ -7,19 +7,17 @@
 package agent
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	gosignal "os/signal"
-	"os/user"
-	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"strconv"
 	"time"
 
+	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
 )
 
@@ -30,7 +28,7 @@ import (
 // any program on the system. Review your security requirements before
 // starting the agent.
 func Start() error {
-	gopsdir, err := ConfigDir()
+	gopsdir, err := internal.ConfigDir()
 	if err != nil {
 		return err
 	}
@@ -81,24 +79,6 @@ func Start() error {
 		}
 	}()
 	return err
-}
-func ConfigDir() (string, error) {
-	if runtime.GOOS == "windows" {
-		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
-	}
-	homeDir := guessUnixHomeDir()
-	if homeDir == "" {
-		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
-	}
-	return filepath.Join(homeDir, ".config", "gops"), nil
-}
-
-func guessUnixHomeDir() string {
-	usr, err := user.Current()
-	if err == nil {
-		return usr.HomeDir
-	}
-	return os.Getenv("HOME")
 }
 
 func handle(conn net.Conn, msg []byte) error {
