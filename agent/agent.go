@@ -7,12 +7,17 @@
 package agent
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	gosignal "os/signal"
+	"os/user"
+	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/google/gops/signal"
@@ -21,14 +26,28 @@ import (
 // Start stars the gops agent on a host process. Once agent started,
 // users can use the advanced gops features.
 //
-// Note: The agent exposes an endpoint via a UNIX socket that can be used by
+// Note: The agent exposes an endpoint via a TCP connection that can be used by
 // any program on the system. Review your security requirements before
 // starting the agent.
 func Start() error {
+	gopsdir, err := ConfigDir()
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(gopsdir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
 	// the agent on Windows systems.
-	sock := fmt.Sprintf("/tmp/gops%d.sock", os.Getpid())
-	l, err := net.Listen("unix", sock)
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return err
+	}
+	port := l.Addr().(*net.TCPAddr).Port
+	portfile := fmt.Sprintf("%s/%d", gopsdir, os.Getpid())
+	err = ioutil.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -38,7 +57,7 @@ func Start() error {
 	go func() {
 		// cleanup the socket on shutdown.
 		<-c
-		os.Remove(sock)
+		os.Remove(portfile)
 		os.Exit(1)
 	}()
 
@@ -62,6 +81,24 @@ func Start() error {
 		}
 	}()
 	return err
+}
+func ConfigDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
+	}
+	homeDir := guessUnixHomeDir()
+	if homeDir == "" {
+		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
+	}
+	return filepath.Join(homeDir, ".config", "gops"), nil
+}
+
+func guessUnixHomeDir() string {
+	usr, err := user.Current()
+	if err == nil {
+		return usr.HomeDir
+	}
+	return os.Getenv("HOME")
 }
 
 func handle(conn net.Conn, msg []byte) error {
