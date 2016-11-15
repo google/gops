@@ -7,11 +7,14 @@
 package agent
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	gosignal "os/signal"
+	"os/user"
+	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"strconv"
@@ -27,7 +30,11 @@ import (
 // any program on the system. Review your security requirements before
 // starting the agent.
 func Start() error {
-	gopsdir, err := configdir()
+	gopsdir, err := ConfigDir()
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(gopsdir, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -39,7 +46,7 @@ func Start() error {
 		return err
 	}
 	port := l.Addr().(*net.TCPAddr).Port
-	portfile := fmt.Sprintf("%s/.%d", gopsdir, os.Getpid())
+	portfile := fmt.Sprintf("%s/%d", gopsdir, os.Getpid())
 	err = ioutil.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 	if err != nil {
 		return err
@@ -75,16 +82,23 @@ func Start() error {
 	}()
 	return err
 }
-
-func configdir() (string, error) {
-	gopsdir := fmt.Sprintf("%s/.gops", os.Getenv("HOME"))
-	if _, err := os.Stat(gopsdir); os.IsNotExist(err) {
-		err = os.Mkdir(gopsdir, os.ModePerm)
-		if err != nil {
-			return "", err
-		}
+func ConfigDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}
-	return gopsdir, nil
+	homeDir := guessUnixHomeDir()
+	if homeDir == "" {
+		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
+	}
+	return filepath.Join(homeDir, ".config", "gops"), nil
+}
+
+func guessUnixHomeDir() string {
+	usr, err := user.Current()
+	if err == nil {
+		return usr.HomeDir
+	}
+	return os.Getenv("HOME")
 }
 
 func handle(conn net.Conn, msg []byte) error {

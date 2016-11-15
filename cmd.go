@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/google/gops/agent"
 	"github.com/google/gops/signal"
 	ps "github.com/keybase/go-ps"
 )
@@ -107,8 +108,12 @@ func vitals(pid int) error {
 	return nil
 }
 
-func getport(pid int) (string, error) {
-	portfile := fmt.Sprintf("%s/.gops/.%d", os.Getenv("HOME"), pid)
+func getPort(pid int) (string, error) {
+	gopsdir, err := agent.ConfigDir()
+	if err != nil {
+		return "", err
+	}
+	portfile := fmt.Sprintf("%s/%d", gopsdir, pid)
 	b, err := ioutil.ReadFile(portfile)
 	if err != nil {
 		return "", err
@@ -118,7 +123,7 @@ func getport(pid int) (string, error) {
 }
 
 func cmd(pid int, c byte) (string, error) {
-	port, err := getport(pid)
+	port, err := getPort(pid)
 	if err != nil {
 		return "", err
 	}
