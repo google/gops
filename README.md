@@ -78,7 +78,7 @@ $ gops pprof-cpu -p=<PID>
 To enter the heap profile, run:
 
 ```sh
-$ gops pprof-mem -p=<PID>
+$ gops pprof-heap -p=<PID>
 ```
 
 #### 4.  gc
@@ -97,4 +97,3 @@ gops reports the Go version the target program is built with, if you run the fol
 ```sh
 $ gops version -p=<PID>
 ```
-
