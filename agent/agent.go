@@ -93,11 +93,7 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "stack-in-use: %v bytes\n", s.StackInuse)
 		fmt.Fprintf(conn, "stack-sys: %v bytes\n", s.StackSys)
 		fmt.Fprintf(conn, "next-gc: when heap-alloc >= %v bytes\n", s.NextGC)
-		if s.LastGC == 0 {
-			fmt.Fprint(conn, "last-gc: 0 ns ago\n")
-		} else {
-			fmt.Fprintf(conn, "last-gc: %v ns ago\n", time.Now().Add(time.Duration(-s.LastGC)).UnixNano())
-		}
+		fmt.Fprintf(conn, "last-gc: %v ns\n", s.LastGC)
 		fmt.Fprintf(conn, "gc-pause: %v ns\n", s.PauseTotalNs)
 		fmt.Fprintf(conn, "num-gc: %v\n", s.NumGC)
 		fmt.Fprintf(conn, "enable-gc: %v\n", s.EnableGC)
