@@ -6,6 +6,7 @@ gops is a command to list and diagnose Go processes currently running on your sy
 $ gops
 983     uplink-soecks	(/usr/local/bin/uplink-soecks)
 52697   gops	(/Users/jbd/bin/gops)
+4132*   foops (/Users/jbd/bin/foops)
 51130   gocode	(/Users/jbd/bin/gocode)
 ```
 
@@ -41,11 +42,20 @@ func main() {
 }
 ```
 
-Please note that diagnostics features are only supported on Unix-like systems for now.
-We are planning to add Windows support in the near future.
-
 ### Diagnostics manual
 
+#### 0. listing all processes
+
+To print all go processes, run `gops` without arguments:
+```sh
+$ gops
+983     uplink-soecks	(/usr/local/bin/uplink-soecks)
+52697   gops	(/Users/jbd/bin/gops)
+4132*   foops (/Users/jbd/bin/foops)
+51130   gocode	(/Users/jbd/bin/gocode)
+```
+
+Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
 #### 1. stack
 
@@ -98,3 +108,9 @@ gops reports the Go version the target program is built with, if you run the fol
 $ gops version -p=<PID>
 ```
 
+#### 6. vitals
+
+To print the runtime statistics such as number of goroutines and `GOMAXPROCS`, run the following:
+```sh
+$ gops vitals -p=<PID>
+```
