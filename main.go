@@ -31,7 +31,7 @@ Commands:
     vitals      Prints the runtime stats.
 
     pprof-heap  Reads the heap profile and launches "go tool pprof".
-    pprof-mem   Reads the CPU profile and launches "go tool pprof".
+    pprof-cpu   Reads the CPU profile and launches "go tool pprof".
 
     help        Prints this help text.
 
