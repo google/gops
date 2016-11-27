@@ -37,8 +37,6 @@ func Start() error {
 		return err
 	}
 
-	// TODO(jbd): Expose these endpoints on HTTP. Then, we can enable
-	// the agent on Windows systems.
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return err
