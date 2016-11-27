@@ -87,8 +87,7 @@ func pprof(pid int, p byte) error {
 	}
 	binary, err := process.Path()
 	if err != nil {
-		// TODO(jbd): add context to the error
-		return err
+		return fmt.Errorf("cannot the binary for the PID: %v", err)
 	}
 	cmd := exec.Command("go", "tool", "pprof", binary, tmpfile.Name())
 	cmd.Env = os.Environ()
