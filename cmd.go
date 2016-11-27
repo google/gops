@@ -24,12 +24,7 @@ var cmds = map[string](func(pid int) error){
 }
 
 func stackTrace(pid int) error {
-	out, err := cmd(pid, signal.StackTrace)
-	if err != nil {
-		return err
-	}
-	fmt.Println(out)
-	return nil
+	return cmdWithPrint(pid, signal.StackTrace)
 }
 
 func gc(pid int) error {
@@ -38,21 +33,11 @@ func gc(pid int) error {
 }
 
 func memStats(pid int) error {
-	out, err := cmd(pid, signal.MemStats)
-	if err != nil {
-		return err
-	}
-	fmt.Printf(out)
-	return nil
+	return cmdWithPrint(pid, signal.MemStats)
 }
 
 func version(pid int) error {
-	out, err := cmd(pid, signal.Version)
-	if err != nil {
-		return err
-	}
-	fmt.Printf(out)
-	return nil
+	return cmdWithPrint(pid, signal.Version)
 }
 
 func pprofHeap(pid int) error {
@@ -98,7 +83,11 @@ func pprof(pid int, p byte) error {
 }
 
 func vitals(pid int) error {
-	out, err := cmd(pid, signal.Vitals)
+	return cmdWithPrint(pid, signal.Vitals)
+}
+
+func cmdWithPrint(pid int, c byte) error {
+	out, err := cmd(pid, c)
 	if err != nil {
 		return err
 	}
