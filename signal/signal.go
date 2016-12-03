@@ -7,7 +7,7 @@ package signal
 
 const (
 	// StackTrace represents a command to print stack trace.
-	StackTrace = byte((iota + 1))
+	StackTrace byte = iota + 1
 
 	// GC runs the garbage collector.
 	GC
