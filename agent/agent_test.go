@@ -30,9 +30,6 @@ func TestAgentClose(t *testing.T) {
 	if portfile != "" {
 		t.Fatalf("got = %q; want empty portfile", portfile)
 	}
-	if listener != nil {
-		t.Fatalf("got listener listening at %v; want nil listener", listener.Addr())
-	}
 }
 
 func TestAgentListenMultipleClose(t *testing.T) {
