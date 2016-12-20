@@ -35,7 +35,7 @@ import (
 )
 
 func main() {
-	if err := agent.Start(); err != nil {
+	if err := agent.Listen(nil); err != nil {
 		log.Fatal(err)
 	}
 	time.Sleep(time.Hour)
