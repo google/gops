@@ -23,12 +23,12 @@ func TestAgentClose(t *testing.T) {
 		t.Fatal(err)
 	}
 	Close()
-	if portfile != "" {
-		t.Fatalf("got = %q; want empty portfile", portfile)
-	}
 	_, err = os.Stat(portfile)
 	if !os.IsNotExist(err) {
 		t.Fatalf("portfile = %q doesn't exist; err = %v", portfile, err)
+	}
+	if portfile != "" {
+		t.Fatalf("got = %q; want empty portfile", portfile)
 	}
 	if listener != nil {
 		t.Fatalf("got listener listening at %v; want nil listener", listener.Addr())
