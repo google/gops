@@ -7,23 +7,23 @@ package signal
 
 const (
 	// StackTrace represents a command to print stack trace.
-	StackTrace = byte(0x1)
+	StackTrace byte = iota + 1
 
 	// GC runs the garbage collector.
-	GC = byte(0x2)
+	GC
 
 	// MemStats reports memory stats.
-	MemStats = byte(0x3)
+	MemStats
 
 	// Version prints the Go version.
-	Version = byte(0x4)
+	Version
 
 	// HeapProfile starts `go tool pprof` with the current memory profile.
-	HeapProfile = byte(0x5)
+	HeapProfile
 
 	// CPUProfile starts `go tool pprof` with the current CPU profile
-	CPUProfile = byte(0x6)
+	CPUProfile
 
 	// Vitals returns Go runtime statistics such as number of goroutines, GOMAXPROCS, and NumCPU.
-	Vitals = byte(0x7)
+	Vitals
 )
