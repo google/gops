@@ -47,6 +47,7 @@ func main() {
 #### 0. listing all processes
 
 To print all go processes, run `gops` without arguments:
+
 ```sh
 $ gops
 983     uplink-soecks	(/usr/local/bin/uplink-soecks)
@@ -62,8 +63,7 @@ Note that processes running the agent are marked with `*` next to the PID (e.g. 
 In order to print the current stack trace from a target program, run the following command:
 
 ```sh
-$ gops stack -p=<PID>
-
+$ gops stack <pid>
 ```
 
 #### 2. memstats
@@ -71,7 +71,7 @@ $ gops stack -p=<PID>
 To print the current memory stats, run the following command:
 
 ```sh
-$ gops memstats -p=<PID>
+$ gops memstats <pid>
 ```
 
 #### 3. pprof
@@ -82,13 +82,13 @@ it shells out to the `go tool pprof` and let you interatively examine the profil
 To enter the CPU profile, run:
 
 ```sh
-$ gops pprof-cpu -p=<PID>
+$ gops pprof-cpu <pid>
 ```
 
 To enter the heap profile, run:
 
 ```sh
-$ gops pprof-heap -p=<PID>
+$ gops pprof-heap <pid>
 ```
 
 #### 4.  gc
@@ -97,7 +97,7 @@ If you want to force run garbage collection on the target program, run the follo
 It will block until the GC is completed.
 
 ```sh
-$ gops gc -p=<PID>
+$ gops gc <pid>
 ```
 
 #### 5. version
@@ -105,12 +105,13 @@ $ gops gc -p=<PID>
 gops reports the Go version the target program is built with, if you run the following:
 
 ```sh
-$ gops version -p=<PID>
+$ gops version <pid>
 ```
 
 #### 6. vitals
 
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`, run the following:
+
 ```sh
-$ gops vitals -p=<PID>
+$ gops vitals <pid>
 ```
