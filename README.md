@@ -108,10 +108,10 @@ gops reports the Go version the target program is built with, if you run the fol
 $ gops version <pid>
 ```
 
-#### 6. vitals
+#### 6. stats
 
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`, run the following:
 
 ```sh
-$ gops vitals <pid>
+$ gops stats <pid>
 ```

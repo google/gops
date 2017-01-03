@@ -28,7 +28,7 @@ Commands:
     stack       Prints the stack trace.
     memstats    Prints the garbage collection stats.
     version     Prints the Go version used to build the program.
-    vitals      Prints the runtime stats.
+    stats       Prints the vital runtime stats.
 
     pprof-heap  Reads the heap profile and launches "go tool pprof".
     pprof-cpu   Reads the CPU profile and launches "go tool pprof".

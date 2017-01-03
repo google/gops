@@ -24,6 +24,6 @@ const (
 	// CPUProfile starts `go tool pprof` with the current CPU profile
 	CPUProfile = byte(0x6)
 
-	// Vitals returns Go runtime statistics such as number of goroutines, GOMAXPROCS, and NumCPU.
-	Vitals = byte(0x7)
+	// Stats returns Go runtime statistics such as number of goroutines, GOMAXPROCS, and NumCPU.
+	Stats = byte(0x7)
 )

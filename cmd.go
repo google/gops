@@ -20,7 +20,7 @@ var cmds = map[string](func(pid int) error){
 	"version":    version,
 	"pprof-heap": pprofHeap,
 	"pprof-cpu":  pprofCPU,
-	"vitals":     vitals,
+	"stats":      stats,
 }
 
 func stackTrace(pid int) error {
@@ -82,8 +82,8 @@ func pprof(pid int, p byte) error {
 	return cmd.Run()
 }
 
-func vitals(pid int) error {
-	return cmdWithPrint(pid, signal.Vitals)
+func stats(pid int) error {
+	return cmdWithPrint(pid, signal.Stats)
 }
 
 func cmdWithPrint(pid int, c byte) error {
