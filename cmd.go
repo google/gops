@@ -54,15 +54,15 @@ func pprof(pid int, p byte) error {
 	if err != nil {
 		return err
 	}
-	if out == "" {
+	if len(out) == 0 {
 		return errors.New("failed to read the profile")
 	}
-	tmpfile, err := ioutil.TempFile("", "heap-profile")
+	tmpfile, err := ioutil.TempFile("", "profile")
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tmpfile.Name())
-	if err := ioutil.WriteFile(tmpfile.Name(), []byte(out), 0); err != nil {
+	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
 		return err
 	}
 	process, err := ps.FindProcess(pid)
@@ -91,25 +91,25 @@ func cmdWithPrint(pid int, c byte) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf(out)
+	fmt.Printf("%s", out)
 	return nil
 }
 
-func cmd(pid int, c byte) (string, error) {
+func cmd(pid int, c byte) ([]byte, error) {
 	port, err := internal.GetPort(pid)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if _, err := conn.Write([]byte{c}); err != nil {
-		return "", err
+		return nil, err
 	}
 	all, err := ioutil.ReadAll(conn)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(all), nil
+	return all, nil
 }
