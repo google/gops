@@ -180,7 +180,7 @@ func handle(conn net.Conn, msg []byte) error {
 	case signal.Version:
 		fmt.Fprintf(conn, "%v\n", runtime.Version())
 	case signal.HeapProfile:
-		pprof.Lookup("heap").WriteTo(conn, 0)
+		pprof.WriteHeapProfile(conn)
 	case signal.CPUProfile:
 		if err := pprof.StartCPUProfile(conn); err != nil {
 			return err
