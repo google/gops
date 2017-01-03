@@ -183,7 +183,7 @@ func handle(conn net.Conn, msg []byte) error {
 		pprof.Lookup("heap").WriteTo(conn, 0)
 	case signal.CPUProfile:
 		if err := pprof.StartCPUProfile(conn); err != nil {
-			return nil
+			return err
 		}
 		time.Sleep(30 * time.Second)
 		pprof.StopCPUProfile()
