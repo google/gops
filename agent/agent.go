@@ -146,10 +146,7 @@ func Close() {
 func handle(conn net.Conn, msg []byte) error {
 	switch msg[0] {
 	case signal.StackTrace:
-		buf := make([]byte, 1<<16)
-		n := runtime.Stack(buf, true)
-		_, err := conn.Write(buf[:n])
-		return err
+		return pprof.Lookup("goroutine").WriteTo(conn, 2)
 	case signal.GC:
 		runtime.GC()
 		_, err := conn.Write([]byte("ok"))
