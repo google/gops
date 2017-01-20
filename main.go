@@ -32,6 +32,7 @@ Commands:
     help        Prints this help text.
 
 Profiling commands:
+    trace       Runs the runtime tracer for 5 secs and launches "go tool trace".
     pprof-heap  Reads the heap profile and launches "go tool pprof".
     pprof-cpu   Reads the CPU profile and launches "go tool pprof".
 

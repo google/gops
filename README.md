@@ -91,7 +91,15 @@ To enter the heap profile, run:
 $ gops pprof-heap <pid>
 ```
 
-#### 4.  gc
+#### 4. trace
+
+gops allows you to start the runtime tracer for 5 seconds and examine the results.
+
+```sh
+$ gops trace <pid>
+```
+
+#### 5.  gc
 
 If you want to force run garbage collection on the target program, run the following command.
 It will block until the GC is completed.
@@ -100,7 +108,7 @@ It will block until the GC is completed.
 $ gops gc <pid>
 ```
 
-#### 5. version
+#### 6. version
 
 gops reports the Go version the target program is built with, if you run the following:
 
@@ -108,7 +116,7 @@ gops reports the Go version the target program is built with, if you run the fol
 $ gops version <pid>
 ```
 
-#### 6. stats
+#### 7. stats
 
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`, run the following:
 

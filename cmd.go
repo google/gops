@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -21,6 +22,7 @@ var cmds = map[string](func(pid int) error){
 	"pprof-heap": pprofHeap,
 	"pprof-cpu":  pprofCPU,
 	"stats":      stats,
+	"trace":      trace,
 }
 
 func stackTrace(pid int) error {
@@ -47,6 +49,31 @@ func pprofHeap(pid int) error {
 func pprofCPU(pid int) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
 	return pprof(pid, signal.CPUProfile)
+}
+
+func trace(pid int) error {
+	fmt.Println("Tracing now, will take 5 secs...")
+	out, err := cmd(pid, signal.Trace)
+	if err != nil {
+		return err
+	}
+	if len(out) == 0 {
+		return errors.New("nothing has traced")
+	}
+	tmpfile, err := ioutil.TempFile("", "trace")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
+		return err
+	}
+	cmd := exec.Command("go", "tool", "trace", tmpfile.Name())
+	cmd.Env = os.Environ()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func pprof(pid int, p byte) error {
@@ -96,6 +123,18 @@ func cmdWithPrint(pid int, c byte) error {
 }
 
 func cmd(pid int, c byte) ([]byte, error) {
+	conn, err := cmdLazy(pid, c)
+	if err != nil {
+		return nil, err
+	}
+	all, err := ioutil.ReadAll(conn)
+	if err != nil {
+		return nil, err
+	}
+	return all, nil
+}
+
+func cmdLazy(pid int, c byte) (io.Reader, error) {
 	port, err := internal.GetPort(pid)
 	if err != nil {
 		return nil, err
@@ -107,9 +146,5 @@ func cmd(pid int, c byte) ([]byte, error) {
 	if _, err := conn.Write([]byte{c}); err != nil {
 		return nil, err
 	}
-	all, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return nil, err
-	}
-	return all, nil
+	return conn, nil
 }

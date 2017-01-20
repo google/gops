@@ -14,6 +14,7 @@ import (
 	gosignal "os/signal"
 	"runtime"
 	"runtime/pprof"
+	"runtime/trace"
 	"strconv"
 	"sync"
 	"time"
@@ -189,6 +190,10 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "OS threads: %v\n", pprof.Lookup("threadcreate").Count())
 		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
 		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
+	case signal.Trace:
+		trace.Start(conn)
+		time.Sleep(5 * time.Second)
+		trace.Stop()
 	}
 	return nil
 }
