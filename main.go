@@ -88,7 +88,7 @@ func processes() {
 	wg.Wait()
 }
 
-// reportGo looks up the runtime.buildVersion symbol
+// printIfGo looks up the runtime.buildVersion symbol
 // in the process' binary and determines if the process
 // if a Go process or not. If the process is a Go process,
 // it reports PID, binary name and full path of the binary.
