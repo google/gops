@@ -11,9 +11,9 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 
+	"github.com/google/gops/internal"
 	"github.com/google/gops/internal/objfile"
 	ps "github.com/keybase/go-ps"
 )
@@ -113,17 +113,19 @@ func printIfGo(pr ps.Process) {
 	}
 
 	var ok bool
-	var agent bool
-	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
 			ok = true
 		}
-		// TODO(jbd): Stat the pid file to determine if the agent is still working.
-		if strings.HasPrefix(s.Name, "github.com/google/gops/agent") {
-			agent = true
-		}
 	}
+
+	var agent bool
+	pidfile, err := internal.PIDFile(pr.Pid())
+	if err == nil {
+		_, err := os.Stat(pidfile)
+		agent = err == nil
+	}
+
 	if ok {
 		buf := bytes.NewBuffer(nil)
 		fmt.Fprintf(buf, "%d", pr.Pid())

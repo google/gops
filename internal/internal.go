@@ -30,12 +30,19 @@ func guessUnixHomeDir() string {
 	return os.Getenv("HOME")
 }
 
-func GetPort(pid int) (string, error) {
+func PIDFile(pid int) (string, error) {
 	gopsdir, err := ConfigDir()
 	if err != nil {
 		return "", err
 	}
-	portfile := fmt.Sprintf("%s/%d", gopsdir, pid)
+	return fmt.Sprintf("%s/%d", gopsdir, pid), nil
+}
+
+func GetPort(pid int) (string, error) {
+	portfile, err := PIDFile(pid)
+	if err != nil {
+		return "", err
+	}
 	b, err := ioutil.ReadFile(portfile)
 	if err != nil {
 		return "", err
