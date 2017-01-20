@@ -6,14 +6,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/google/gops/internal/objfile"
-
 	ps "github.com/keybase/go-ps"
 )
 
@@ -72,57 +73,66 @@ func processes() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var undetermined int
+
+	var wg sync.WaitGroup
+	wg.Add(len(pss))
+
 	for _, pr := range pss {
-		if pr.Pid() == 0 {
-			// ignore system process
-			continue
-		}
-		path, err := pr.Path()
-		if err != nil {
-			undetermined++
-			continue
-		}
-		ok, agent, err := isGo(pr.Pid(), path)
-		if err != nil {
-			// TODO(jbd): worth to report the number?
-			continue
-		}
-		if ok {
-			fmt.Printf("%d", pr.Pid())
-			if agent {
-				fmt.Printf("*")
-			}
-			fmt.Printf("\t%v\t(%v)\n", pr.Executable(), path)
-		}
+		pr := pr
+		go func() {
+			defer wg.Done()
+
+			printIfGo(pr)
+		}()
 	}
-	if undetermined > 0 {
-		fmt.Printf("\n%d processes left undetermined\n", undetermined)
-	}
+	wg.Wait()
 }
 
-func isGo(pid int, path string) (ok bool, agent bool, err error) {
+// reportGo looks up the runtime.buildVersion symbol
+// in the process' binary and determines if the process
+// if a Go process or not. If the process is a Go process,
+// it reports PID, binary name and full path of the binary.
+func printIfGo(pr ps.Process) {
+	if pr.Pid() == 0 {
+		// ignore system process
+		return
+	}
+	path, err := pr.Path()
+	if err != nil {
+		return
+	}
 	obj, err := objfile.Open(path)
 	if err != nil {
-		return false, false, err
+		return
 	}
 	defer obj.Close()
 
 	symbols, err := obj.Symbols()
 	if err != nil {
-		return false, false, err
+		return
 	}
 
+	var ok bool
+	var agent bool
 	// TODO(jbd): find a faster way to determine Go programs.
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
 			ok = true
 		}
+		// TODO(jbd): Stat the pid file to determine if the agent is still working.
 		if strings.HasPrefix(s.Name, "github.com/google/gops/agent") {
 			agent = true
 		}
 	}
-	return ok, agent, nil
+	if ok {
+		buf := bytes.NewBuffer(nil)
+		fmt.Fprintf(buf, "%d", pr.Pid())
+		if agent {
+			fmt.Fprint(buf, "*")
+		}
+		fmt.Fprintf(buf, "\t%v\t(%v)\n", pr.Executable(), path)
+		buf.WriteTo(os.Stdout)
+	}
 }
 
 func usage(msg string) {
