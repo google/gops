@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/google/gops/internal/objfile"
@@ -19,8 +18,6 @@ import (
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
 
-    gops             Lists all Go processes currently running.
-    gops cmd <pid>   See the commands below.
 
 Commands:
     gc          Runs the garbage collector and blocks until successful.
@@ -51,17 +48,13 @@ func main() {
 		usage("")
 	}
 	if len(os.Args) < 3 {
-		usage("missing PID")
-	}
-	pid, err := strconv.Atoi(os.Args[2])
-	if err != nil {
-		usage("PID should be numeric")
+		usage("missing PID or host:port combo")
 	}
 	fn, ok := cmds[cmd]
 	if !ok {
 		usage("unknown subcommand")
 	}
-	if err := fn(pid); err != nil {
+	if err := fn(os.Args[2]); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}

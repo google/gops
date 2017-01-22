@@ -26,4 +26,7 @@ const (
 
 	// Stats returns Go runtime statistics such as number of goroutines, GOMAXPROCS, and NumCPU.
 	Stats = byte(0x7)
+
+	// BinaryDump returns running binary file.
+	BinaryDump = byte(0x8)
 )

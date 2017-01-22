@@ -18,8 +18,11 @@ import (
 	"sync"
 	"time"
 
+	"bufio"
+
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
+	"github.com/kardianos/osext"
 )
 
 const defaultAddr = "127.0.0.1:0"
@@ -189,6 +192,19 @@ func handle(conn net.Conn, msg []byte) error {
 		fmt.Fprintf(conn, "OS threads: %v\n", pprof.Lookup("threadcreate").Count())
 		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
 		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
+	case signal.BinaryDump:
+		path, err := osext.Executable()
+		if err != nil {
+			return err
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = bufio.NewReader(f).WriteTo(conn)
+		return err
 	}
 	return nil
 }

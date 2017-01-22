@@ -44,7 +44,14 @@ func main() {
 
 ### Diagnostics manual
 
-#### 0. listing all processes
+It is possible to use gops tool both in local and remote mode.
+
+Local mode requires that you start the target binary as the same user that runs gops binary.
+To use gops in a remote mode you need to know target binary's agent's host and port.
+
+In Local mode use process's PID as a `<target>`; in Remote mode `<target>` is `host:port` combination.
+
+#### 0. listing all processes running locally
 
 To print all go processes, run `gops` without arguments:
 
@@ -63,7 +70,7 @@ Note that processes running the agent are marked with `*` next to the PID (e.g. 
 In order to print the current stack trace from a target program, run the following command:
 
 ```sh
-$ gops stack <pid>
+$ gops stack <target>
 ```
 
 #### 2. memstats
@@ -71,7 +78,7 @@ $ gops stack <pid>
 To print the current memory stats, run the following command:
 
 ```sh
-$ gops memstats <pid>
+$ gops memstats <target>
 ```
 
 #### 3. pprof
@@ -82,13 +89,13 @@ it shells out to the `go tool pprof` and let you interatively examine the profil
 To enter the CPU profile, run:
 
 ```sh
-$ gops pprof-cpu <pid>
+$ gops pprof-cpu <target>
 ```
 
 To enter the heap profile, run:
 
 ```sh
-$ gops pprof-heap <pid>
+$ gops pprof-heap <target>
 ```
 
 #### 4.  gc
@@ -97,7 +104,7 @@ If you want to force run garbage collection on the target program, run the follo
 It will block until the GC is completed.
 
 ```sh
-$ gops gc <pid>
+$ gops gc <target>
 ```
 
 #### 5. version
@@ -105,7 +112,7 @@ $ gops gc <pid>
 gops reports the Go version the target program is built with, if you run the following:
 
 ```sh
-$ gops version <pid>
+$ gops version <target>
 ```
 
 #### 6. stats
@@ -113,5 +120,5 @@ $ gops version <pid>
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`, run the following:
 
 ```sh
-$ gops stats <pid>
+$ gops stats <target>
 ```
