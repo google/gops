@@ -14,6 +14,7 @@ import (
 	gosignal "os/signal"
 	"runtime"
 	"runtime/pprof"
+	"runtime/trace"
 	"strconv"
 	"sync"
 	"time"
@@ -205,6 +206,10 @@ func handle(conn net.Conn, msg []byte) error {
 
 		_, err = bufio.NewReader(f).WriteTo(conn)
 		return err
+	case signal.Trace:
+		trace.Start(conn)
+		time.Sleep(5 * time.Second)
+		trace.Stop()
 	}
 	return nil
 }

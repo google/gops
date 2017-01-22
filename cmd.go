@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -22,6 +23,7 @@ var cmds = map[string](func(target string) error){
 	"pprof-heap": pprofHeap,
 	"pprof-cpu":  pprofCPU,
 	"stats":      stats,
+	"trace":      trace,
 }
 
 func stackTrace(target string) error {
@@ -52,6 +54,36 @@ func pprofHeap(target string) error {
 func pprofCPU(target string) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
 	return pprof(target, signal.CPUProfile)
+}
+
+func trace(target string) error {
+	addr, err := targetToAddr(target)
+	if err != nil {
+		return errors.Wrap(err, "Couldn't parse target's string to addr")
+	}
+
+	fmt.Println("Tracing now, will take 5 secs...")
+	out, err := cmd(*addr, signal.Trace)
+	if err != nil {
+		return err
+	}
+	if len(out) == 0 {
+		return errors.New("nothing has traced")
+	}
+	tmpfile, err := ioutil.TempFile("", "trace")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile.Name())
+	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
+		return err
+	}
+	cmd := exec.Command("go", "tool", "trace", tmpfile.Name())
+	cmd.Env = os.Environ()
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func pprof(target string, p byte) error {
@@ -139,14 +171,24 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		return nil, errors.Wrap(err, "Couldn't parse PID")
 	}
 	port, err := internal.GetPort(pid)
-	if err != nil {
-		return nil, errors.Wrap(err, "Couldn't get port by PID")
-	}
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
 	return addr, nil
 }
 
 func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
+	conn, err := cmdLazy(addr, c)
+	if err != nil {
+		return nil, errors.Wrap(err, "Couldn't get port by PID")
+	}
+
+	all, err := ioutil.ReadAll(conn)
+	if err != nil {
+		return nil, err
+	}
+	return all, nil
+}
+
+func cmdLazy(addr net.TCPAddr, c byte) (io.Reader, error) {
 	conn, err := net.DialTCP("tcp", nil, &addr)
 	if err != nil {
 		return nil, err
@@ -154,9 +196,5 @@ func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
 	if _, err := conn.Write([]byte{c}); err != nil {
 		return nil, err
 	}
-	all, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return nil, err
-	}
-	return all, nil
+	return conn, nil
 }

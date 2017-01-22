@@ -6,13 +6,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
-	"strings"
+	"sync"
 
+	"github.com/google/gops/internal"
 	"github.com/google/gops/internal/objfile"
-
 	ps "github.com/keybase/go-ps"
 )
 
@@ -20,17 +21,18 @@ const helpText = `Usage: gops is a tool to list and diagnose Go processes.
 
 
 Commands:
-    gc          Runs the garbage collector and blocks until successful.
-
     stack       Prints the stack trace.
-    memstats    Prints the garbage collection stats.
+    gc          Runs the garbage collector and blocks until successful.
+    memstats    Prints the allocation and garbage collection stats.
     version     Prints the Go version used to build the program.
     stats       Prints the vital runtime stats.
+    help        Prints this help text.
 
+Profiling commands:
+    trace       Runs the runtime tracer for 5 secs and launches "go tool trace".
     pprof-heap  Reads the heap profile and launches "go tool pprof".
     pprof-cpu   Reads the CPU profile and launches "go tool pprof".
 
-    help        Prints this help text.
 
 All commands require the agent running on the Go process.
 Symbol "*" indicates the process runs the agent.`
@@ -65,57 +67,68 @@ func processes() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var undetermined int
+
+	var wg sync.WaitGroup
+	wg.Add(len(pss))
+
 	for _, pr := range pss {
-		if pr.Pid() == 0 {
-			// ignore system process
-			continue
-		}
-		path, err := pr.Path()
-		if err != nil {
-			undetermined++
-			continue
-		}
-		ok, agent, err := isGo(pr.Pid(), path)
-		if err != nil {
-			// TODO(jbd): worth to report the number?
-			continue
-		}
-		if ok {
-			fmt.Printf("%d", pr.Pid())
-			if agent {
-				fmt.Printf("*")
-			}
-			fmt.Printf("\t%v\t(%v)\n", pr.Executable(), path)
-		}
+		pr := pr
+		go func() {
+			defer wg.Done()
+
+			printIfGo(pr)
+		}()
 	}
-	if undetermined > 0 {
-		fmt.Printf("\n%d processes left undetermined\n", undetermined)
-	}
+	wg.Wait()
 }
 
-func isGo(pid int, path string) (ok bool, agent bool, err error) {
+// printIfGo looks up the runtime.buildVersion symbol
+// in the process' binary and determines if the process
+// if a Go process or not. If the process is a Go process,
+// it reports PID, binary name and full path of the binary.
+func printIfGo(pr ps.Process) {
+	if pr.Pid() == 0 {
+		// ignore system process
+		return
+	}
+	path, err := pr.Path()
+	if err != nil {
+		return
+	}
 	obj, err := objfile.Open(path)
 	if err != nil {
-		return false, false, err
+		return
 	}
 	defer obj.Close()
 
 	symbols, err := obj.Symbols()
 	if err != nil {
-		return false, false, err
+		return
 	}
 
-	// TODO(jbd): find a faster way to determine Go programs.
+	var ok bool
 	for _, s := range symbols {
 		if s.Name == "runtime.buildVersion" {
 			ok = true
 		}
-		if strings.HasPrefix(s.Name, "github.com/google/gops/agent") {
-			agent = true
-		}
 	}
-	return ok, agent, nil
+
+	var agent bool
+	pidfile, err := internal.PIDFile(pr.Pid())
+	if err == nil {
+		_, err := os.Stat(pidfile)
+		agent = err == nil
+	}
+
+	if ok {
+		buf := bytes.NewBuffer(nil)
+		fmt.Fprintf(buf, "%d", pr.Pid())
+		if agent {
+			fmt.Fprint(buf, "*")
+		}
+		fmt.Fprintf(buf, "\t%v\t(%v)\n", pr.Executable(), path)
+		buf.WriteTo(os.Stdout)
+	}
 }
 
 func usage(msg string) {
