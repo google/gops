@@ -42,3 +42,26 @@ func TestAgentListenMultipleClose(t *testing.T) {
 	Close()
 	Close()
 }
+
+func TestFormatBytes(t *testing.T) {
+	tests := []struct {
+		val  uint64
+		want string
+	}{
+		{1023, "1023 bytes"},
+		{1024, "1.00KB (1024 bytes)"},
+		{1024*1024 - 100, "1023.90KB (1048476 bytes)"},
+		{1024 * 1024, "1.00MB (1048576 bytes)"},
+		{1024 * 1025, "1.00MB (1049600 bytes)"},
+		{1024 * 1024 * 1024, "1.00GB (1073741824 bytes)"},
+		{1024*1024*1024 + 430*1024*1024, "1.42GB (1524629504 bytes)"},
+		{1024 * 1024 * 1024 * 1024 * 1024, "1.00PB (1125899906842624 bytes)"},
+		{1024 * 1024 * 1024 * 1024 * 1024 * 1024, "1024.00PB (1152921504606846976 bytes)"},
+	}
+	for _, tt := range tests {
+		result := formatBytes(tt.val)
+		if result != tt.want {
+			t.Errorf("formatBytes(%v) = %q; want %q", tt.val, result, tt.want)
+		}
+	}
+}
