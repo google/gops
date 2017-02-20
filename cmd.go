@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var cmds = map[string](func(target string) error){
+var cmds = map[string](func(addr net.TCPAddr) error){
 	"stack":      stackTrace,
 	"gc":         gc,
 	"memstats":   memStats,
@@ -26,44 +26,35 @@ var cmds = map[string](func(target string) error){
 	"trace":      trace,
 }
 
-func stackTrace(target string) error {
-	return cmdWithPrint(target, signal.StackTrace)
+func stackTrace(addr net.TCPAddr) error {
+	return cmdWithPrint(addr, signal.StackTrace)
 }
 
-func gc(target string) error {
-	addr, err := targetToAddr(target)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't parse target's string to addr")
-	}
-	_, err = cmd(*addr, signal.GC)
+func gc(addr net.TCPAddr) error {
+	_, err := cmd(addr, signal.GC)
 	return err
 }
 
-func memStats(target string) error {
-	return cmdWithPrint(target, signal.MemStats)
+func memStats(addr net.TCPAddr) error {
+	return cmdWithPrint(addr, signal.MemStats)
 }
 
-func version(target string) error {
-	return cmdWithPrint(target, signal.Version)
+func version(addr net.TCPAddr) error {
+	return cmdWithPrint(addr, signal.Version)
 }
 
-func pprofHeap(target string) error {
-	return pprof(target, signal.HeapProfile)
+func pprofHeap(addr net.TCPAddr) error {
+	return pprof(addr, signal.HeapProfile)
 }
 
-func pprofCPU(target string) error {
+func pprofCPU(addr net.TCPAddr) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
-	return pprof(target, signal.CPUProfile)
+	return pprof(addr, signal.CPUProfile)
 }
 
-func trace(target string) error {
-	addr, err := targetToAddr(target)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't parse target's string to addr")
-	}
-
+func trace(addr net.TCPAddr) error {
 	fmt.Println("Tracing now, will take 5 secs...")
-	out, err := cmd(*addr, signal.Trace)
+	out, err := cmd(addr, signal.Trace)
 	if err != nil {
 		return err
 	}
@@ -86,18 +77,14 @@ func trace(target string) error {
 	return cmd.Run()
 }
 
-func pprof(target string, p byte) error {
-	addr, err := targetToAddr(target)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't parse target's string to addr")
-	}
+func pprof(addr net.TCPAddr, p byte) error {
 
 	tmpDumpFile, err := ioutil.TempFile("", "profile")
 	if err != nil {
 		return err
 	}
 	{
-		out, err := cmd(*addr, p)
+		out, err := cmd(addr, p)
 		if err != nil {
 			return err
 		}
@@ -116,9 +103,9 @@ func pprof(target string, p byte) error {
 	}
 	{
 
-		out, err := cmd(*addr, signal.BinaryDump)
+		out, err := cmd(addr, signal.BinaryDump)
 		if err != nil {
-			return errors.New("Couldn't retrieve running binary's dump")
+			return errors.New("couldn't retrieve running binary's dump")
 		}
 		if len(out) == 0 {
 			return errors.New("failed to read the binary")
@@ -136,16 +123,12 @@ func pprof(target string, p byte) error {
 	return cmd.Run()
 }
 
-func stats(target string) error {
-	return cmdWithPrint(target, signal.Stats)
+func stats(addr net.TCPAddr) error {
+	return cmdWithPrint(addr, signal.Stats)
 }
 
-func cmdWithPrint(target string, c byte) error {
-	addr, err := targetToAddr(target)
-	if err != nil {
-		return errors.Wrap(err, "Couldn't parse target's string to addr")
-	}
-	out, err := cmd(*addr, c)
+func cmdWithPrint(addr net.TCPAddr, c byte) error {
+	out, err := cmd(addr, c)
 	if err != nil {
 		return err
 	}
@@ -161,14 +144,14 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		var err error
 		addr, err := net.ResolveTCPAddr("tcp", target)
 		if err != nil {
-			return nil, errors.Wrap(err, "Couldn't parse dst address")
+			return nil, errors.Wrap(err, "couldn't parse dst address")
 		}
 		return addr, nil
 	}
 	// try to find port by pid then, connect to local
 	pid, err := strconv.Atoi(target)
 	if err != nil {
-		return nil, errors.Wrap(err, "Couldn't parse PID")
+		return nil, errors.Wrap(err, "couldn't parse PID")
 	}
 	port, err := internal.GetPort(pid)
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
@@ -178,7 +161,7 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
 	conn, err := cmdLazy(addr, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "Couldn't get port by PID")
+		return nil, errors.Wrap(err, "couldn't get port by PID")
 	}
 
 	all, err := ioutil.ReadAll(conn)

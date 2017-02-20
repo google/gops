@@ -50,13 +50,18 @@ func main() {
 		usage("")
 	}
 	if len(os.Args) < 3 {
-		usage("missing PID or host:port combo")
+		usage("missing PID or address")
 	}
 	fn, ok := cmds[cmd]
 	if !ok {
 		usage("unknown subcommand")
 	}
-	if err := fn(os.Args[2]); err != nil {
+	addr, err := targetToAddr(os.Args[2])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
+		os.Exit(1)
+	}
+	if err := fn(*addr); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
