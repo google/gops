@@ -137,7 +137,7 @@ To enter the heap profile, run:
 $ gops pprof-heap (<pid>|<addr>)
 ```
 
-##### Go execution trace
+##### Execution trace
 
 gops allows you to start the runtime tracer for 5 seconds and examine the results.
 
