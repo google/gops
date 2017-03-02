@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/google/gops/internal"
@@ -20,8 +19,6 @@ import (
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
 
-    gops             Lists all Go processes currently running.
-    gops cmd <pid>   See the commands below.
 
 Commands:
     stack       Prints the stack trace.
@@ -53,17 +50,18 @@ func main() {
 		usage("")
 	}
 	if len(os.Args) < 3 {
-		usage("missing PID")
-	}
-	pid, err := strconv.Atoi(os.Args[2])
-	if err != nil {
-		usage("PID should be numeric")
+		usage("missing PID or address")
 	}
 	fn, ok := cmds[cmd]
 	if !ok {
 		usage("unknown subcommand")
 	}
-	if err := fn(pid); err != nil {
+	addr, err := targetToAddr(os.Args[2])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
+		os.Exit(1)
+	}
+	if err := fn(*addr); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}

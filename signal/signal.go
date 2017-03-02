@@ -29,4 +29,7 @@ const (
 
 	// Trace starts the Go execution tracer, waits 5 seconds and launches the trace tool.
 	Trace = byte(0x8)
+
+	// BinaryDump returns running binary file.
+	BinaryDump = byte(0x9)
 )
