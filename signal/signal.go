@@ -5,6 +5,10 @@
 // Package signal contains signals used to communicate to the gops agents.
 package signal
 
+import (
+	"encoding/json"
+)
+
 const (
 	// StackTrace represents a command to print stack trace.
 	StackTrace = byte(0x1)
@@ -33,3 +37,9 @@ const (
 	// BinaryDump returns running binary file.
 	BinaryDump = byte(0x9)
 )
+
+// Command with Flags defined base on code
+type Command struct {
+	Code  byte
+	Flags json.RawMessage
+}
