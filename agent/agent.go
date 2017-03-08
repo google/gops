@@ -47,6 +47,11 @@ type Options struct {
 	// resources if the running process recieves an interrupt.
 	// Optional.
 	NoShutdownCleanup bool
+
+	// ConfigDir is the directory the agent should use for storing
+	// configuration and working files. If empty it will be set from the
+	// environment.
+	ConfigDir string
 }
 
 // Listen starts the gops agent on a host process. Once agent started, users
@@ -69,10 +74,14 @@ func Listen(opts *Options) error {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
 	}
 
-	gopsdir, err := internal.ConfigDir()
-	if err != nil {
-		return err
+	var err error
+	gopsdir := opts.ConfigDir
+	if gopsdir == "" {
+		if gopsdir, err = internal.ConfigDir(); err != nil {
+			return err
+		}
 	}
+
 	err = os.MkdirAll(gopsdir, os.ModePerm)
 	if err != nil {
 		return err
