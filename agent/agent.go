@@ -7,10 +7,12 @@
 package agent
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	gosignal "os/signal"
 	"runtime"
@@ -20,8 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"bufio"
-
+	"context"
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
 	"github.com/kardianos/osext"
@@ -31,7 +32,7 @@ const defaultAddr = "127.0.0.1:0"
 
 var (
 	mu       sync.Mutex
-	portfile string
+	server   *http.Server
 	listener net.Listener
 
 	units = []string{" bytes", "KB", "MB", "GB", "TB", "PB"}
@@ -65,63 +66,67 @@ func Listen(opts *Options) error {
 	if opts == nil {
 		opts = &Options{}
 	}
-	if portfile != "" {
-		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
-	}
 
 	gopsdir, err := internal.ConfigDir()
 	if err != nil {
 		return err
 	}
+
 	err = os.MkdirAll(gopsdir, os.ModePerm)
 	if err != nil {
 		return err
 	}
-	if !opts.NoShutdownCleanup {
-		gracefulShutdown()
+
+	pid := os.Getpid()
+	portfile, _ := internal.PIDFile(pid)
+	if port, err := internal.GetPort(pid); err == nil {
+		return fmt.Errorf("gops: agent already listening at port: %s", port)
 	}
 
 	addr := opts.Addr
 	if addr == "" {
 		addr = defaultAddr
 	}
+
+	srv := &http.Server{Addr: addr, Handler: &Agent{}}
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
-	listener = ln
-	port := listener.Addr().(*net.TCPAddr).Port
-	portfile = fmt.Sprintf("%s/%d", gopsdir, os.Getpid())
+
+	port := ln.Addr().(*net.TCPAddr).Port
 	err = ioutil.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	go listen()
+	if !opts.NoShutdownCleanup {
+		gracefulShutdown()
+	}
+
+	listener = ln
+	server = srv
+	go srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
+
 	return nil
 }
 
-func listen() {
-	buf := make([]byte, 1)
-	for {
-		fd, err := listener.Accept()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
-			if netErr, ok := err.(net.Error); ok && !netErr.Temporary() {
-				break
-			}
-			continue
-		}
-		if _, err := fd.Read(buf); err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
-			continue
-		}
-		if err := handle(fd, buf); err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
-			continue
-		}
-		fd.Close()
+// tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
+// connections. It's used by ListenAndServe and ListenAndServeTLS so
+// dead TCP connections (e.g. closing laptop mid-download) eventually
+// go away. Copy from "net/http" package
+type tcpKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return
 	}
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
 }
 
 func gracefulShutdown() {
@@ -133,21 +138,6 @@ func gracefulShutdown() {
 		Close()
 		os.Exit(1)
 	}()
-}
-
-// Close closes the agent, removing temporary files and closing the TCP listener.
-// If no agent is listening, Close does nothing.
-func Close() {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if portfile != "" {
-		os.Remove(portfile)
-		portfile = ""
-	}
-	if listener != nil {
-		listener.Close()
-	}
 }
 
 func formatBytes(val uint64) string {
@@ -165,73 +155,86 @@ func formatBytes(val uint64) string {
 	return fmt.Sprintf("%d bytes", val)
 }
 
-func handle(conn io.Writer, msg []byte) error {
-	switch msg[0] {
+// Agent implement http.Handler
+type Agent struct{}
+
+// ServeHTTP parse the requests body into signal.Command and run the task
+func (a *Agent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	cmd := signal.Command{}
+	decodeErr := json.NewDecoder(r.Body).Decode(&cmd)
+	if decodeErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	switch cmd.Code {
 	case signal.StackTrace:
-		return pprof.Lookup("goroutine").WriteTo(conn, 2)
+		pprof.Lookup("goroutine").WriteTo(w, 2)
 	case signal.GC:
 		runtime.GC()
-		_, err := conn.Write([]byte("ok"))
-		return err
+		w.Write([]byte("ok"))
 	case signal.MemStats:
 		var s runtime.MemStats
 		runtime.ReadMemStats(&s)
-		fmt.Fprintf(conn, "alloc: %v\n", formatBytes(s.Alloc))
-		fmt.Fprintf(conn, "total-alloc: %v\n", formatBytes(s.TotalAlloc))
-		fmt.Fprintf(conn, "sys: %v\n", formatBytes(s.Sys))
-		fmt.Fprintf(conn, "lookups: %v\n", s.Lookups)
-		fmt.Fprintf(conn, "mallocs: %v\n", s.Mallocs)
-		fmt.Fprintf(conn, "frees: %v\n", s.Frees)
-		fmt.Fprintf(conn, "heap-alloc: %v\n", formatBytes(s.HeapAlloc))
-		fmt.Fprintf(conn, "heap-sys: %v\n", formatBytes(s.HeapSys))
-		fmt.Fprintf(conn, "heap-idle: %v\n", formatBytes(s.HeapIdle))
-		fmt.Fprintf(conn, "heap-in-use: %v\n", formatBytes(s.HeapInuse))
-		fmt.Fprintf(conn, "heap-released: %v\n", formatBytes(s.HeapReleased))
-		fmt.Fprintf(conn, "heap-objects: %v\n", s.HeapObjects)
-		fmt.Fprintf(conn, "stack-in-use: %v\n", formatBytes(s.StackInuse))
-		fmt.Fprintf(conn, "stack-sys: %v\n", formatBytes(s.StackSys))
-		fmt.Fprintf(conn, "next-gc: when heap-alloc >= %v\n", formatBytes(s.NextGC))
+		fmt.Fprintf(w, "alloc: %v\n", formatBytes(s.Alloc))
+		fmt.Fprintf(w, "total-alloc: %v\n", formatBytes(s.TotalAlloc))
+		fmt.Fprintf(w, "sys: %v\n", formatBytes(s.Sys))
+		fmt.Fprintf(w, "lookups: %v\n", s.Lookups)
+		fmt.Fprintf(w, "mallocs: %v\n", s.Mallocs)
+		fmt.Fprintf(w, "frees: %v\n", s.Frees)
+		fmt.Fprintf(w, "heap-alloc: %v\n", formatBytes(s.HeapAlloc))
+		fmt.Fprintf(w, "heap-sys: %v\n", formatBytes(s.HeapSys))
+		fmt.Fprintf(w, "heap-idle: %v\n", formatBytes(s.HeapIdle))
+		fmt.Fprintf(w, "heap-in-use: %v\n", formatBytes(s.HeapInuse))
+		fmt.Fprintf(w, "heap-released: %v\n", formatBytes(s.HeapReleased))
+		fmt.Fprintf(w, "heap-objects: %v\n", s.HeapObjects)
+		fmt.Fprintf(w, "stack-in-use: %v\n", formatBytes(s.StackInuse))
+		fmt.Fprintf(w, "stack-sys: %v\n", formatBytes(s.StackSys))
+		fmt.Fprintf(w, "next-gc: when heap-alloc >= %v\n", formatBytes(s.NextGC))
 		lastGC := "-"
 		if s.LastGC != 0 {
 			lastGC = fmt.Sprint(time.Unix(0, int64(s.LastGC)))
 		}
-		fmt.Fprintf(conn, "last-gc: %v\n", lastGC)
-		fmt.Fprintf(conn, "gc-pause: %v\n", time.Duration(s.PauseTotalNs))
-		fmt.Fprintf(conn, "num-gc: %v\n", s.NumGC)
-		fmt.Fprintf(conn, "enable-gc: %v\n", s.EnableGC)
-		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
+		fmt.Fprintf(w, "last-gc: %v\n", lastGC)
+		fmt.Fprintf(w, "gc-pause: %v\n", time.Duration(s.PauseTotalNs))
+		fmt.Fprintf(w, "num-gc: %v\n", s.NumGC)
+		fmt.Fprintf(w, "enable-gc: %v\n", s.EnableGC)
+		fmt.Fprintf(w, "debug-gc: %v\n", s.DebugGC)
 	case signal.Version:
-		fmt.Fprintf(conn, "%v\n", runtime.Version())
+		fmt.Fprintf(w, "%v\n", runtime.Version())
 	case signal.HeapProfile:
-		pprof.WriteHeapProfile(conn)
+		pprof.WriteHeapProfile(w)
 	case signal.CPUProfile:
-		if err := pprof.StartCPUProfile(conn); err != nil {
-			return err
+		if err := pprof.StartCPUProfile(w); err != nil {
+			return
 		}
-		time.Sleep(30 * time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+		defer cancel()
+		<-ctx.Done()
 		pprof.StopCPUProfile()
 	case signal.Stats:
-		fmt.Fprintf(conn, "goroutines: %v\n", runtime.NumGoroutine())
-		fmt.Fprintf(conn, "OS threads: %v\n", pprof.Lookup("threadcreate").Count())
-		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
-		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
+		fmt.Fprintf(w, "goroutines: %v\n", runtime.NumGoroutine())
+		fmt.Fprintf(w, "OS threads: %v\n", pprof.Lookup("threadcreate").Count())
+		fmt.Fprintf(w, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
+		fmt.Fprintf(w, "num CPU: %v\n", runtime.NumCPU())
 	case signal.BinaryDump:
 		path, err := osext.Executable()
 		if err != nil {
-			return err
+			return
 		}
 		f, err := os.Open(path)
 		if err != nil {
-			return err
+			return
 		}
 		defer f.Close()
 
-		_, err = bufio.NewReader(f).WriteTo(conn)
-		return err
+		_, err = bufio.NewReader(f).WriteTo(w)
 	case signal.Trace:
-		trace.Start(conn)
-		time.Sleep(5 * time.Second)
+		trace.Start(w)
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+		<-ctx.Done()
 		trace.Stop()
 	}
-	return nil
 }

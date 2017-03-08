@@ -1,21 +1,24 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
 	"github.com/pkg/errors"
 )
 
-var cmds = map[string](func(addr net.TCPAddr) error){
+var clientHTTP = http.DefaultClient
+
+var cmds = map[string](func(addr *url.URL) error){
 	"stack":      stackTrace,
 	"gc":         gc,
 	"memstats":   memStats,
@@ -26,35 +29,49 @@ var cmds = map[string](func(addr net.TCPAddr) error){
 	"trace":      trace,
 }
 
-func stackTrace(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.StackTrace)
+func stackTrace(u *url.URL) error {
+	return requestWithPrint(u, &signal.Command{
+		Code: signal.StackTrace,
+	})
 }
 
-func gc(addr net.TCPAddr) error {
-	_, err := cmd(addr, signal.GC)
+func gc(u *url.URL) error {
+	_, err := request(clientHTTP, u, &signal.Command{
+		Code: signal.GC,
+	})
 	return err
 }
 
-func memStats(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.MemStats)
+func memStats(u *url.URL) error {
+	return requestWithPrint(u, &signal.Command{
+		Code: signal.MemStats,
+	})
 }
 
-func version(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.Version)
+func version(u *url.URL) error {
+	return requestWithPrint(u, &signal.Command{
+		Code: signal.Version,
+	})
 }
 
-func pprofHeap(addr net.TCPAddr) error {
-	return pprof(addr, signal.HeapProfile)
+func pprofHeap(u *url.URL) error {
+	return pprof(u, &signal.Command{
+		Code: signal.HeapProfile,
+	})
 }
 
-func pprofCPU(addr net.TCPAddr) error {
+func pprofCPU(u *url.URL) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
-	return pprof(addr, signal.CPUProfile)
+	return pprof(u, &signal.Command{
+		Code: signal.CPUProfile,
+	})
 }
 
-func trace(addr net.TCPAddr) error {
+func trace(u *url.URL) error {
 	fmt.Println("Tracing now, will take 5 secs...")
-	out, err := cmd(addr, signal.Trace)
+	out, err := request(clientHTTP, u, &signal.Command{
+		Code: signal.Trace,
+	})
 	if err != nil {
 		return err
 	}
@@ -77,14 +94,14 @@ func trace(addr net.TCPAddr) error {
 	return cmd.Run()
 }
 
-func pprof(addr net.TCPAddr, p byte) error {
+func pprof(u *url.URL, c *signal.Command) error {
 
 	tmpDumpFile, err := ioutil.TempFile("", "profile")
 	if err != nil {
 		return err
 	}
 	{
-		out, err := cmd(addr, p)
+		out, err := request(clientHTTP, u, c)
 		if err != nil {
 			return err
 		}
@@ -103,7 +120,9 @@ func pprof(addr net.TCPAddr, p byte) error {
 	}
 	{
 
-		out, err := cmd(addr, signal.BinaryDump)
+		out, err := request(clientHTTP, u, &signal.Command{
+			Code: signal.BinaryDump,
+		})
 		if err != nil {
 			return errors.New("couldn't retrieve running binary's dump")
 		}
@@ -123,61 +142,60 @@ func pprof(addr net.TCPAddr, p byte) error {
 	return cmd.Run()
 }
 
-func stats(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.Stats)
+func stats(u *url.URL) error {
+	return requestWithPrint(u, &signal.Command{
+		Code: signal.Stats,
+	})
 }
 
-func cmdWithPrint(addr net.TCPAddr, c byte) error {
-	out, err := cmd(addr, c)
+func requestWithPrint(u *url.URL, c *signal.Command) error {
+	out, err := request(clientHTTP, u, c)
 	if err != nil {
 		return err
 	}
+
 	fmt.Printf("%s", out)
 	return nil
 }
 
-// targetToAddr tries to parse the target string, be it remote host:port
+// targetToAddr tries to parse the target string, be it remote request URL
 // or local process's PID.
-func targetToAddr(target string) (*net.TCPAddr, error) {
-	if strings.Index(target, ":") != -1 {
-		// addr host:port passed
-		var err error
-		addr, err := net.ResolveTCPAddr("tcp", target)
+func targetToAddr(target string) (*url.URL, error) {
+	if pid, parseErr := strconv.Atoi(target); parseErr == nil {
+		port, err := internal.GetPort(pid)
 		if err != nil {
-			return nil, errors.Wrap(err, "couldn't parse dst address")
+			return nil, errors.Wrap(err, "couldn't get port config for given PID")
 		}
-		return addr, nil
+
+		u := &url.URL{
+			Scheme: "http",
+			Host:   "127.0.0.1:" + port,
+		}
+
+		return u, nil
 	}
-	// try to find port by pid then, connect to local
-	pid, err := strconv.Atoi(target)
-	if err != nil {
-		return nil, errors.Wrap(err, "couldn't parse PID")
-	}
-	port, err := internal.GetPort(pid)
-	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
-	return addr, nil
+
+	u, err := url.Parse(target)
+	return u, err
 }
 
-func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
-	conn, err := cmdLazy(addr, c)
+func request(client *http.Client, u *url.URL, c *signal.Command) ([]byte, error) {
+	b, err := json.Marshal(c)
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get port by PID")
+		return nil, err
 	}
 
-	all, err := ioutil.ReadAll(conn)
+	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(b))
 	if err != nil {
 		return nil, err
 	}
-	return all, nil
-}
 
-func cmdLazy(addr net.TCPAddr, c byte) (io.Reader, error) {
-	conn, err := net.DialTCP("tcp", nil, &addr)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	if _, err := conn.Write([]byte{c}); err != nil {
-		return nil, err
-	}
-	return conn, nil
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	return body, err
 }
