@@ -17,7 +17,7 @@ func Close() {
 		os.Remove(portfile)
 	}
 
-	if server != nil {
-		server.Close()
+	if listener != nil {
+		listener.Close()
 	}
 }

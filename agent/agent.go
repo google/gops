@@ -31,8 +31,9 @@ import (
 const defaultAddr = "127.0.0.1:0"
 
 var (
-	mu     sync.Mutex
-	server *http.Server
+	mu       sync.Mutex
+	server   *http.Server
+	listener net.Listener
 
 	units = []string{" bytes", "KB", "MB", "GB", "TB", "PB"}
 )
@@ -103,6 +104,7 @@ func Listen(opts *Options) error {
 		gracefulShutdown()
 	}
 
+	listener = ln
 	server = srv
 	go srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)})
 

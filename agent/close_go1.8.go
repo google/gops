@@ -23,5 +23,6 @@ func Close() {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		defer cancel()
 		server.Shutdown(ctx)
+		server.Close()
 	}
 }
