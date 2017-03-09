@@ -7,6 +7,8 @@ package agent
 import (
 	"os"
 	"testing"
+
+	"github.com/google/gops/internal"
 )
 
 func TestListen(t *testing.T) {
@@ -23,12 +25,11 @@ func TestAgentClose(t *testing.T) {
 		t.Fatal(err)
 	}
 	Close()
+
+	portfile, _ := internal.PIDFile(os.Getpid())
 	_, err = os.Stat(portfile)
 	if !os.IsNotExist(err) {
 		t.Fatalf("portfile = %q doesn't exist; err = %v", portfile, err)
-	}
-	if portfile != "" {
-		t.Fatalf("got = %q; want empty portfile", portfile)
 	}
 }
 
