@@ -44,7 +44,7 @@ type Options struct {
 	Addr string
 
 	// NoShutdownCleanup tells the agent not to automatically cleanup
-	// resources if the running process recieves an interrupt.
+	// resources if the running process receives an interrupt.
 	// Optional.
 	NoShutdownCleanup bool
 }
