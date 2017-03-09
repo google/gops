@@ -66,10 +66,6 @@ func Listen(opts *Options) error {
 		opts = &Options{}
 	}
 
-	// if portfile != "" {
-	// 	return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
-	// }
-
 	gopsdir, err := internal.ConfigDir()
 	if err != nil {
 		return err

@@ -58,10 +58,10 @@ func main() {
 	}
 	addr, err := targetToAddr(os.Args[2])
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
+		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to HTTP request address: %v\n", os.Args[2], err)
 		os.Exit(1)
 	}
-	if err := fn(*addr); err != nil {
+	if err := fn(addr); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
