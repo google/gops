@@ -49,7 +49,7 @@ It is possible to use gops tool both in local and remote mode.
 Local mode requires that you start the target binary as the same user that runs gops binary.
 To use gops in a remote mode you need to know target's agent address.
 
-In Local mode use process's PID as a target; in Remote mode target is a `host:port` combination.
+In Local mode use process's PID as a target; in Remote mode target is a URL `http://host:port/[path]`.
 
 #### 0. Listing all processes running locally
 
