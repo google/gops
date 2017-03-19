@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
-	"github.com/pkg/errors"
 )
 
 var cmds = map[string](func(addr net.TCPAddr) error){
@@ -102,10 +102,9 @@ func pprof(addr net.TCPAddr, p byte) error {
 		return err
 	}
 	{
-
 		out, err := cmd(addr, signal.BinaryDump)
 		if err != nil {
-			return errors.New("couldn't retrieve running binary's dump")
+			return fmt.Errorf("failed to read the binary: %v", err)
 		}
 		if len(out) == 0 {
 			return errors.New("failed to read the binary")
@@ -144,14 +143,14 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		var err error
 		addr, err := net.ResolveTCPAddr("tcp", target)
 		if err != nil {
-			return nil, errors.Wrap(err, "couldn't parse dst address")
+			return nil, fmt.Errorf("couldn't parse dst address: %v", err)
 		}
 		return addr, nil
 	}
 	// try to find port by pid then, connect to local
 	pid, err := strconv.Atoi(target)
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't parse PID")
+		return nil, fmt.Errorf("couldn't parse PID: %v", err)
 	}
 	port, err := internal.GetPort(pid)
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
@@ -161,7 +160,7 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
 	conn, err := cmdLazy(addr, c)
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get port by PID")
+		return nil, fmt.Errorf("couldn't get port by PID: %v", err)
 	}
 
 	all, err := ioutil.ReadAll(conn)
