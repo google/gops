@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/google/gops/goprocess"
+	"github.com/google/gops/internal/namespaces"
 )
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
@@ -54,9 +55,14 @@ func main() {
 	if !ok {
 		usage("unknown subcommand")
 	}
-	addr, err := targetToAddr(os.Args[2])
+	target := os.Args[2]
+	err := namespaces.HandleNamespaces(cmd, target)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
+		fmt.Printf("Couldn't enter namespace for target %v: %v\n", target, err)
+	}
+	addr, err := targetToAddr(target)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", target, err)
 		os.Exit(1)
 	}
 	if err := fn(*addr); err != nil {
