@@ -1,0 +1,19 @@
+memo = "c464a3d83956b677421b9fc797a6c77aa6e94a28120ee71d2b19860a5ff39c20"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kardianos/osext"
+  packages = ["."]
+  revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/keybase/go-ps"
+  packages = [".","darwincgo"]
+  revision = "668c8856d9992f97248b3177d45743d2cc1068db"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/arch"
+  packages = ["arm/armasm","ppc64/ppc64asm","x86/x86asm"]
+  revision = "9dd86654181264cc7c76c929f3df20d11251e23a"
