@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -15,7 +14,7 @@ import (
 	"github.com/google/gops/signal"
 )
 
-var cmds = map[string](func(addr net.TCPAddr) error){
+var cmds = map[string](func(cli Client) error){
 	"stack":      stackTrace,
 	"gc":         gc,
 	"memstats":   memStats,
@@ -26,35 +25,35 @@ var cmds = map[string](func(addr net.TCPAddr) error){
 	"trace":      trace,
 }
 
-func stackTrace(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.StackTrace)
+func stackTrace(cli Client) error {
+	return cmdWithPrint(cli, signal.StackTrace)
 }
 
-func gc(addr net.TCPAddr) error {
-	_, err := cmd(addr, signal.GC)
+func gc(cli Client) error {
+	_, err := cli.Run(signal.GC)
 	return err
 }
 
-func memStats(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.MemStats)
+func memStats(cli Client) error {
+	return cmdWithPrint(cli, signal.MemStats)
 }
 
-func version(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.Version)
+func version(cli Client) error {
+	return cmdWithPrint(cli, signal.Version)
 }
 
-func pprofHeap(addr net.TCPAddr) error {
-	return pprof(addr, signal.HeapProfile)
+func pprofHeap(cli Client) error {
+	return pprof(cli, signal.HeapProfile)
 }
 
-func pprofCPU(addr net.TCPAddr) error {
+func pprofCPU(cli Client) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
-	return pprof(addr, signal.CPUProfile)
+	return pprof(cli, signal.CPUProfile)
 }
 
-func trace(addr net.TCPAddr) error {
+func trace(cli Client) error {
 	fmt.Println("Tracing now, will take 5 secs...")
-	out, err := cmd(addr, signal.Trace)
+	out, err := cli.Run(signal.Trace)
 	if err != nil {
 		return err
 	}
@@ -77,14 +76,14 @@ func trace(addr net.TCPAddr) error {
 	return cmd.Run()
 }
 
-func pprof(addr net.TCPAddr, p byte) error {
+func pprof(cli Client, p byte) error {
 
 	tmpDumpFile, err := ioutil.TempFile("", "profile")
 	if err != nil {
 		return err
 	}
 	{
-		out, err := cmd(addr, p)
+		out, err := cli.Run(p)
 		if err != nil {
 			return err
 		}
@@ -102,7 +101,7 @@ func pprof(addr net.TCPAddr, p byte) error {
 		return err
 	}
 	{
-		out, err := cmd(addr, signal.BinaryDump)
+		out, err := cli.Run(signal.BinaryDump)
 		if err != nil {
 			return fmt.Errorf("failed to read the binary: %v", err)
 		}
@@ -122,12 +121,12 @@ func pprof(addr net.TCPAddr, p byte) error {
 	return cmd.Run()
 }
 
-func stats(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.Stats)
+func stats(cli Client) error {
+	return cmdWithPrint(cli, signal.Stats)
 }
 
-func cmdWithPrint(addr net.TCPAddr, c byte) error {
-	out, err := cmd(addr, c)
+func cmdWithPrint(cli Client, c byte) error {
+	out, err := cli.Run(c)
 	if err != nil {
 		return err
 	}
@@ -135,9 +134,12 @@ func cmdWithPrint(addr net.TCPAddr, c byte) error {
 	return nil
 }
 
-// targetToAddr tries to parse the target string, be it remote host:port
+// targetToClient tries to parse the target string, be it remote host:port
 // or local process's PID.
-func targetToAddr(target string) (*net.TCPAddr, error) {
+func targetToClient(target string) (Client, error) {
+	if strings.HasPrefix(target, "http:") || strings.HasPrefix(target, "https:") {
+		return &ClientHTTP{baseAddr: target}, nil
+	}
 	if strings.Index(target, ":") != -1 {
 		// addr host:port passed
 		var err error
@@ -145,7 +147,7 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		if err != nil {
 			return nil, fmt.Errorf("couldn't parse dst address: %v", err)
 		}
-		return addr, nil
+		return &ClientTCP{addr: *addr}, nil
 	}
 	// try to find port by pid then, connect to local
 	pid, err := strconv.Atoi(target)
@@ -153,30 +155,9 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		return nil, fmt.Errorf("couldn't parse PID: %v", err)
 	}
 	port, err := internal.GetPort(pid)
+	if err != nil {
+		return nil, err
+	}
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
-	return addr, nil
-}
-
-func cmd(addr net.TCPAddr, c byte) ([]byte, error) {
-	conn, err := cmdLazy(addr, c)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't get port by PID: %v", err)
-	}
-
-	all, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return nil, err
-	}
-	return all, nil
-}
-
-func cmdLazy(addr net.TCPAddr, c byte) (io.Reader, error) {
-	conn, err := net.DialTCP("tcp", nil, &addr)
-	if err != nil {
-		return nil, err
-	}
-	if _, err := conn.Write([]byte{c}); err != nil {
-		return nil, err
-	}
-	return conn, nil
+	return &ClientTCP{addr: *addr}, nil
 }
