@@ -16,6 +16,10 @@ func HandlerFunc() http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
-		handle(w, sig)
+		err := handle(w, sig)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte(err.Error()))
+		}
 	}
 }

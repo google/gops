@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"time"
 
 	"net/url"
 
@@ -57,6 +56,9 @@ type ClientHTTP struct {
 
 func (c *ClientHTTP) Run(sig byte) ([]byte, error) {
 	r, err := c.RunReader(sig)
+	if err != nil {
+		return nil, err
+	}
 	defer r.Close()
 	if err != nil {
 		return nil, err
@@ -69,19 +71,20 @@ func (c *ClientHTTP) RunReader(sig byte) (io.ReadCloser, error) {
 	if !ok {
 		return nil, fmt.Errorf("unknown signal %v", sig)
 	}
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
+	client := &http.Client{}
 
-	u, err := url.Parse(c.baseAddr)
-	if err != nil {
-		return nil, errors.Wrap(err, "couldn't parse dest URI")
-	}
-	u.Query().Add("action", action)
+	values := url.Values{}
+	values.Set("action", action)
 
-	rsp, err := client.Get(u.String())
+	req, _ := http.NewRequest("GET", c.baseAddr, nil)
+	req.URL.RawQuery = values.Encode()
+
+	rsp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error when making HTTP call")
+	}
+	if rsp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("Server returned HTTP %v", rsp.StatusCode)
 	}
 	return rsp.Body, nil
 }
