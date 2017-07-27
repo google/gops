@@ -69,6 +69,7 @@ func trace(addr net.TCPAddr) error {
 	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
 		return err
 	}
+	fmt.Printf("Trace dump saved to: %s\n", tmpfile.Name())
 	cmd := exec.Command("go", "tool", "trace", tmpfile.Name())
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
@@ -114,6 +115,8 @@ func pprof(addr net.TCPAddr, p byte) error {
 			return err
 		}
 	}
+	fmt.Printf("Profiling dump saved to: %s\n", tmpDumpFile.Name())
+	fmt.Printf("Binary file saved to: %s\n", tmpBinFile.Name())
 	cmd := exec.Command("go", "tool", "pprof", tmpBinFile.Name(), tmpDumpFile.Name())
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
