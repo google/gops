@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	"github.com/google/gops/internal"
-	"github.com/google/gops/internal/objfile"
+	"github.com/google/gops/internal/goversion"
 	ps "github.com/keybase/go-ps"
 )
 
@@ -100,24 +100,11 @@ func printIfGo(pr ps.Process) {
 	if err != nil {
 		return
 	}
-	obj, err := objfile.Open(path)
+	fi, err := os.Stat(path)
 	if err != nil {
 		return
 	}
-	defer obj.Close()
-
-	symbols, err := obj.Symbols()
-	if err != nil {
-		return
-	}
-
-	var ok bool
-	for _, s := range symbols {
-		if s.Name == "runtime.buildVersion" {
-			ok = true
-		}
-	}
-
+	version, ok := goversion.Report(path, path, fi)
 	var agent bool
 	pidfile, err := internal.PIDFile(pr.Pid())
 	if err == nil {
@@ -131,7 +118,7 @@ func printIfGo(pr ps.Process) {
 		if agent {
 			fmt.Fprint(buf, "*")
 		}
-		fmt.Fprintf(buf, "\t%v\t(%v)\n", pr.Executable(), path)
+		fmt.Fprintf(buf, "\t%v\t%v\t%v\n", pr.Executable(), version, path)
 		buf.WriteTo(os.Stdout)
 	}
 }
