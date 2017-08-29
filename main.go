@@ -8,13 +8,9 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
-	"sync"
 
-	"github.com/google/gops/internal"
-	"github.com/google/gops/internal/goversion"
-	ps "github.com/keybase/go-ps"
+	"github.com/google/gops/goprocess"
 )
 
 const helpText = `Usage: gops is a tool to list and diagnose Go processes.
@@ -68,57 +64,13 @@ func main() {
 }
 
 func processes() {
-	pss, err := ps.Processes()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(len(pss))
-
-	for _, pr := range pss {
-		pr := pr
-		go func() {
-			defer wg.Done()
-
-			printIfGo(pr)
-		}()
-	}
-	wg.Wait()
-}
-
-// printIfGo looks up the runtime.buildVersion symbol
-// in the process' binary and determines if the process
-// if a Go process or not. If the process is a Go process,
-// it reports PID, binary name and full path of the binary.
-func printIfGo(pr ps.Process) {
-	if pr.Pid() == 0 {
-		// ignore system process
-		return
-	}
-	path, err := pr.Path()
-	if err != nil {
-		return
-	}
-	fi, err := os.Stat(path)
-	if err != nil {
-		return
-	}
-	version, ok := goversion.Report(path, path, fi)
-	var agent bool
-	pidfile, err := internal.PIDFile(pr.Pid())
-	if err == nil {
-		_, err := os.Stat(pidfile)
-		agent = err == nil
-	}
-
-	if ok {
+	for _, p := range goprocess.Find() {
 		buf := bytes.NewBuffer(nil)
-		fmt.Fprintf(buf, "%d", pr.Pid())
-		if agent {
+		fmt.Fprintf(buf, "%d", p.PID)
+		if p.Agent {
 			fmt.Fprint(buf, "*")
 		}
-		fmt.Fprintf(buf, "\t%v\t%v\t%v\n", pr.Executable(), version, path)
+		fmt.Fprintf(buf, "\t%v\t%v\t%v\n", p.Exec, p.BuildVersion, p.Path)
 		buf.WriteTo(os.Stdout)
 	}
 }
