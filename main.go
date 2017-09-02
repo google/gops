@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/google/gops/goprocess"
 )
@@ -64,13 +66,31 @@ func main() {
 }
 
 func processes() {
-	for _, p := range goprocess.Find() {
+	ps := goprocess.Find()
+
+	var maxPID, maxExec, maxVersion int
+	for _, p := range ps {
+		maxPID = max(maxPID, len(strconv.Itoa(p.PID)))
+		maxExec = max(maxExec, len(p.Exec))
+		maxVersion = max(maxVersion, len(p.BuildVersion))
+	}
+
+	for _, p := range ps {
 		buf := bytes.NewBuffer(nil)
-		fmt.Fprintf(buf, "%d", p.PID)
+		pid := strconv.Itoa(p.PID)
+		fmt.Fprint(buf, pad(pid, maxPID))
 		if p.Agent {
 			fmt.Fprint(buf, "*")
+		} else {
+			fmt.Fprint(buf, " ")
 		}
-		fmt.Fprintf(buf, "\t%v\t%v\t%v\n", p.Exec, p.BuildVersion, p.Path)
+		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, pad(p.Exec, maxExec))
+		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, pad(p.BuildVersion, maxVersion))
+		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, p.Path)
+		fmt.Fprintln(buf)
 		buf.WriteTo(os.Stdout)
 	}
 }
@@ -81,4 +101,18 @@ func usage(msg string) {
 	}
 	fmt.Fprintf(os.Stderr, "%v\n", helpText)
 	os.Exit(1)
+}
+
+func pad(s string, total int) string {
+	if len(s) >= total {
+		return s
+	}
+	return s + strings.Repeat(" ", total-len(s))
+}
+
+func max(i, j int) int {
+	if i > j {
+		return i
+	}
+	return j
 }
