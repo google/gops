@@ -104,15 +104,6 @@ If you want to force run garbage collection on the target program, run `gc`.
 It will block until the GC is completed.
 
 
-#### $ gops version (\<pid\>|\<addr\>)
-
-gops reports the Go version the target program is built with, if you run the following:
-
-```sh
-$ gops version (<pid>|<addr>)
-devel +6a3c6c0 Sat Jan 14 05:57:07 2017 +0000
-```
-
 #### $ gops stats (\<pid\>|\<addr\>)
 
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`.
