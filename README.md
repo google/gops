@@ -1,6 +1,6 @@
 # gops
 
-[![Build Status](https://travis-ci.org/google/gops.svg?branch=master)](https://travis-ci.org/google/gops)[![GoDoc](https://godoc.org/github.com/google/gops/agent?status.svg)](https://godoc.org/github.com/google/gops/agent)
+[![GoDoc](https://godoc.org/github.com/google/gops/agent?status.svg)](https://godoc.org/github.com/google/gops/agent)
 
 gops is a command to list and diagnose Go processes currently running on your system.
 

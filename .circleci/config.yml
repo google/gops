@@ -1,0 +1,15 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/google/gops
+    steps:
+      - checkout
+
+      # specify any bash command here prefixed with `run: `
+      - run: go test -v ./...
