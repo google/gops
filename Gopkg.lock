@@ -19,9 +19,15 @@
   packages = ["arm/armasm","ppc64/ppc64asm","x86/x86asm"]
   revision = "f185940480d2c897e1ca8cf2f1be122e1258341b"
 
+[[projects]]
+  name = "rsc.io/goversion"
+  packages = ["version"]
+  revision = "84cd9d26d7efce780a7aaafd0944961371da741f"
+  version = "v1.0.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c464a3d83956b677421b9fc797a6c77aa6e94a28120ee71d2b19860a5ff39c20"
+  inputs-digest = "4b494828d559e89fc1fe70b9bfdd0f5c8ad62ee16258a3b2bcf1028c140faa32"
   solver-name = "gps-cdcl"
   solver-version = 1
