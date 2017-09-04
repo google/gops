@@ -14,8 +14,8 @@ import (
 	ps "github.com/keybase/go-ps"
 )
 
-// GoProcess represents a Go process.
-type GoProcess struct {
+// P represents a Go process.
+type P struct {
 	PID          int
 	PPID         int
 	Exec         string
@@ -24,10 +24,9 @@ type GoProcess struct {
 	Agent        bool
 }
 
-// Find returns all the Go processes currently
-// running on this host.
-func Find() []GoProcess {
-	var results []GoProcess
+// FindAll returns all the Go processes currently running on this host.
+func FindAll() []P {
+	var results []P
 
 	pss, err := ps.Processes()
 	if err != nil {
@@ -49,7 +48,7 @@ func Find() []GoProcess {
 			if !ok {
 				return
 			}
-			results = append(results, GoProcess{
+			results = append(results, P{
 				PID:          pr.Pid(),
 				PPID:         pr.PPid(),
 				Exec:         pr.Executable(),
@@ -61,6 +60,26 @@ func Find() []GoProcess {
 	}
 	wg.Wait()
 	return results
+}
+
+// Find finds info about the process identified with the given PID.
+func Find(pid int) (p P, ok bool, err error) {
+	pr, err := ps.FindProcess(pid)
+	if err != nil {
+		return P{}, false, err
+	}
+	path, version, agent, ok, err := isGo(pr)
+	if !ok {
+		return P{}, false, nil
+	}
+	return P{
+		PID:          pr.Pid(),
+		PPID:         pr.PPid(),
+		Exec:         pr.Executable(),
+		Path:         path,
+		BuildVersion: version,
+		Agent:        agent,
+	}, true, nil
 }
 
 // isGo looks up the runtime.buildVersion symbol

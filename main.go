@@ -66,7 +66,7 @@ func main() {
 }
 
 func processes() {
-	ps := goprocess.Find()
+	ps := goprocess.FindAll()
 
 	var maxPID, maxExec, maxVersion int
 	for _, p := range ps {
