@@ -22,7 +22,6 @@ Commands:
     stack       Prints the stack trace.
     gc          Runs the garbage collector and blocks until successful.
     memstats    Prints the allocation and garbage collection stats.
-    version     Prints the Go version used to build the program.
     stats       Prints the vital runtime stats.
     help        Prints this help text.
 

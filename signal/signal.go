@@ -15,9 +15,6 @@ const (
 	// MemStats reports memory stats.
 	MemStats = byte(0x3)
 
-	// Version prints the Go version.
-	Version = byte(0x4)
-
 	// HeapProfile starts `go tool pprof` with the current memory profile.
 	HeapProfile = byte(0x5)
 

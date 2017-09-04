@@ -19,7 +19,6 @@ var cmds = map[string](func(addr net.TCPAddr) error){
 	"stack":      stackTrace,
 	"gc":         gc,
 	"memstats":   memStats,
-	"version":    version,
 	"pprof-heap": pprofHeap,
 	"pprof-cpu":  pprofCPU,
 	"stats":      stats,
@@ -37,10 +36,6 @@ func gc(addr net.TCPAddr) error {
 
 func memStats(addr net.TCPAddr) error {
 	return cmdWithPrint(addr, signal.MemStats)
-}
-
-func version(addr net.TCPAddr) error {
-	return cmdWithPrint(addr, signal.Version)
 }
 
 func pprofHeap(addr net.TCPAddr) error {

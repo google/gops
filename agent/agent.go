@@ -200,8 +200,6 @@ func handle(conn io.Writer, msg []byte) error {
 		fmt.Fprintf(conn, "num-gc: %v\n", s.NumGC)
 		fmt.Fprintf(conn, "enable-gc: %v\n", s.EnableGC)
 		fmt.Fprintf(conn, "debug-gc: %v\n", s.DebugGC)
-	case signal.Version:
-		fmt.Fprintf(conn, "%v\n", runtime.Version())
 	case signal.HeapProfile:
 		pprof.WriteHeapProfile(conn)
 	case signal.CPUProfile:
