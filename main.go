@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -69,11 +70,13 @@ func processes() {
 	ps := goprocess.FindAll()
 
 	var maxPID, maxPPID, maxExec, maxVersion int
-	for _, p := range ps {
+	for i, p := range ps {
+		ps[i].BuildVersion = shortenVersion(p.BuildVersion)
 		maxPID = max(maxPID, len(strconv.Itoa(p.PID)))
 		maxPPID = max(maxPPID, len(strconv.Itoa(p.PPID)))
 		maxExec = max(maxExec, len(p.Exec))
-		maxVersion = max(maxVersion, len(p.BuildVersion))
+		maxVersion = max(maxVersion, len(ps[i].BuildVersion))
+
 	}
 
 	for _, p := range ps {
@@ -97,6 +100,19 @@ func processes() {
 		fmt.Fprintln(buf)
 		buf.WriteTo(os.Stdout)
 	}
+}
+
+var develRe = regexp.MustCompile(`devel\s+\+\w+`)
+
+func shortenVersion(v string) string {
+	if !strings.HasPrefix(v, "devel") {
+		return v
+	}
+	results := develRe.FindAllString(v, 1)
+	if len(results) == 0 {
+		return v
+	}
+	return results[0]
 }
 
 func usage(msg string) {
