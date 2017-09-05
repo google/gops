@@ -86,13 +86,13 @@ func processes() {
 		fmt.Fprint(buf, " ")
 		ppid := strconv.Itoa(p.PPID)
 		fmt.Fprint(buf, pad(ppid, maxPPID))
+		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, pad(p.Exec, maxExec))
 		if p.Agent {
 			fmt.Fprint(buf, "*")
 		} else {
 			fmt.Fprint(buf, " ")
 		}
-		fmt.Fprint(buf, " ")
-		fmt.Fprint(buf, pad(p.Exec, maxExec))
 		fmt.Fprint(buf, " ")
 		fmt.Fprint(buf, pad(p.BuildVersion, maxVersion))
 		fmt.Fprint(buf, " ")
