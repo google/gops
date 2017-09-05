@@ -68,9 +68,10 @@ func main() {
 func processes() {
 	ps := goprocess.FindAll()
 
-	var maxPID, maxExec, maxVersion int
+	var maxPID, maxPPID, maxExec, maxVersion int
 	for _, p := range ps {
 		maxPID = max(maxPID, len(strconv.Itoa(p.PID)))
+		maxPPID = max(maxPPID, len(strconv.Itoa(p.PPID)))
 		maxExec = max(maxExec, len(p.Exec))
 		maxVersion = max(maxVersion, len(p.BuildVersion))
 	}
@@ -79,6 +80,9 @@ func processes() {
 		buf := bytes.NewBuffer(nil)
 		pid := strconv.Itoa(p.PID)
 		fmt.Fprint(buf, pad(pid, maxPID))
+		fmt.Fprint(buf, " ")
+		ppid := strconv.Itoa(p.PPID)
+		fmt.Fprint(buf, pad(ppid, maxPPID))
 		if p.Agent {
 			fmt.Fprint(buf, "*")
 		} else {
