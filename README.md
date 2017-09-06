@@ -50,9 +50,9 @@ func main() {
 It is possible to use gops tool both in local and remote mode.
 
 Local mode requires that you start the target binary as the same user that runs gops binary.
-To use gops in a remote mode you need to know target's agent address.
+To use gops in a remote mode you need to know target's agent address (and HTTP endpoint if using HTTP listener).
 
-In Local mode use process's PID as a target; in Remote mode target is a `host:port` combination.
+In Local mode use process's PID as a target; in Remote mode target is a `host:port` combination or HTTP addr (`http://host:port/handler`).
 
 #### 0. Listing all processes running locally
 
@@ -68,13 +68,13 @@ $ gops
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
-#### $ gops stack (\<pid\>|\<addr\>)
+#### $ gops stack (\<pid\>|\<addr\>|\<endpoint\>)
 
 In order to print the current stack trace from a target program, run the following command:
 
 
 ```sh
-$ gops stack (<pid>|<addr>)
+$ gops stack (<pid>|<addr>|<endpoint>)
 gops stack 85709
 goroutine 8 [running]:
 runtime/pprof.writeGoroutineStacks(0x13c7bc0, 0xc42000e008, 0xc420ec8520, 0xc420ec8520)
@@ -92,31 +92,31 @@ created by github.com/google/gops/agent.Listen
 # ...
 ```
 
-#### $ gops memstats (\<pid\>|\<addr\>)
+#### $ gops memstats (\<pid\>|\<addr\>|\<endpoint\>)
 
 To print the current memory stats, run the following command:
 
 ```sh
-$ gops memstats (<pid>|<addr>)
+$ gops memstats (<pid>|<addr>|<endpoint>)
 ```
 
 
-#### $ gops gc (\<pid\>|\<addr\>)
+#### $ gops gc (\<pid\>|\<addr\>|\<endpoint\>)
 
 If you want to force run garbage collection on the target program, run `gc`.
 It will block until the GC is completed.
 
 
-#### $ gops version (\<pid\>|\<addr\>)
+#### $ gops version (\<pid\>|\<addr\>|\<endpoint\>)
 
 gops reports the Go version the target program is built with, if you run the following:
 
 ```sh
-$ gops version (<pid>|<addr>)
+$ gops version (<pid>|<addr>|<endpoint>)
 devel +6a3c6c0 Sat Jan 14 05:57:07 2017 +0000
 ```
 
-#### $ gops stats (\<pid\>|\<addr\>)
+#### $ gops stats (\<pid\>|\<addr\>|\<endpoint\>)
 
 To print the runtime statistics such as number of goroutines and `GOMAXPROCS`.
 
@@ -131,13 +131,13 @@ it shells out to the `go tool pprof` and let you interatively examine the profil
 To enter the CPU profile, run:
 
 ```sh
-$ gops pprof-cpu (<pid>|<addr>)
+$ gops pprof-cpu (<pid>|<addr>|<endpoint>)
 ```
 
 To enter the heap profile, run:
 
 ```sh
-$ gops pprof-heap (<pid>|<addr>)
+$ gops pprof-heap (<pid>|<addr>|<endpoint>)
 ```
 
 ##### Execution trace
@@ -145,6 +145,6 @@ $ gops pprof-heap (<pid>|<addr>)
 gops allows you to start the runtime tracer for 5 seconds and examine the results.
 
 ```sh
-$ gops trace (<pid>|<addr>)
+$ gops trace (<pid>|<addr>|<endpoint>)
 ```
 

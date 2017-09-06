@@ -55,12 +55,12 @@ func main() {
 	if !ok {
 		usage("unknown subcommand")
 	}
-	addr, err := targetToAddr(os.Args[2])
+	cli, err := targetToClient(os.Args[2])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
 		os.Exit(1)
 	}
-	if err := fn(*addr); err != nil {
+	if err := fn(cli); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}

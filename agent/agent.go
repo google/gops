@@ -116,7 +116,7 @@ func listen() {
 			fmt.Fprintf(os.Stderr, "gops: %v", err)
 			continue
 		}
-		if err := handle(fd, buf); err != nil {
+		if err := handle(fd, buf[0]); err != nil {
 			fmt.Fprintf(os.Stderr, "gops: %v", err)
 			continue
 		}
@@ -165,8 +165,8 @@ func formatBytes(val uint64) string {
 	return fmt.Sprintf("%d bytes", val)
 }
 
-func handle(conn io.Writer, msg []byte) error {
-	switch msg[0] {
+func handle(conn io.Writer, msg byte) error {
+	switch msg {
 	case signal.StackTrace:
 		return pprof.Lookup("goroutine").WriteTo(conn, 2)
 	case signal.GC:

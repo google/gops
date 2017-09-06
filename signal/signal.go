@@ -33,3 +33,40 @@ const (
 	// BinaryDump returns running binary file.
 	BinaryDump = byte(0x9)
 )
+
+// httpPathToSignal maps HTTP request param values to signals.
+var httpPathToSignal = map[string]byte{
+	"stacktrace": StackTrace,
+	"gc":         GC,
+	"memstats":   MemStats,
+	"version":    Version,
+	"prof-heap":  HeapProfile,
+	"prof-cpu":   CPUProfile,
+	"stats":      Stats,
+	"trace":      Trace,
+	"binary":     BinaryDump,
+}
+
+// toHTTPPath maps signals to HTTP request params.
+var toHTTPPath = map[byte]string{}
+
+func init() {
+	// Fill second lookup map from first
+	for k, v := range httpPathToSignal {
+		toHTTPPath[v] = k
+	}
+}
+
+// ToParam returns HTTP param associated with given signal.
+// Boolean is false if signal was not found.
+func ToParam(sig byte) (string, bool) {
+	ret, ok := toHTTPPath[sig]
+	return ret, ok
+}
+
+// FromParam returns signal associated with given HTTP parameter.
+// Boolean is false if signal was not found.
+func FromParam(param string) (byte, bool) {
+	ret, ok := httpPathToSignal[param]
+	return ret, ok
+}
