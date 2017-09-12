@@ -43,7 +43,7 @@ type Options struct {
 	// Optional.
 	Addr string
 
-	// ShutdownCleanup utomatically cleans up resources if the
+	// ShutdownCleanup automatically cleans up resources if the
 	// running process receives an interrupt. Otherwise, users
 	// can call Close before shutting down.
 	// Optional.
