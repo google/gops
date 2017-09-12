@@ -10,7 +10,7 @@ import (
 )
 
 func TestListen(t *testing.T) {
-	err := Listen(nil)
+	err := Listen(Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestListen(t *testing.T) {
 }
 
 func TestAgentClose(t *testing.T) {
-	err := Listen(nil)
+	err := Listen(Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestAgentClose(t *testing.T) {
 }
 
 func TestAgentListenMultipleClose(t *testing.T) {
-	err := Listen(nil)
+	err := Listen(Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
