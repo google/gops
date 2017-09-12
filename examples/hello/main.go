@@ -13,7 +13,7 @@ import (
 
 func main() {
 	if err := agent.Listen(agent.Options{
-		ShutdownCleanup: true, // automatically closes on interrupt.
+		ShutdownCleanup: true, // automatically closes on os.Interrupt
 	}); err != nil {
 		log.Fatal(err)
 	}
