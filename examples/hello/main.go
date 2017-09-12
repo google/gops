@@ -12,7 +12,9 @@ import (
 )
 
 func main() {
-	if err := agent.Listen(nil); err != nil {
+	if err := agent.Listen(agent.Options{
+		ShutdownCleanup: true, // automatically closes on os.Interrupt
+	}); err != nil {
 		log.Fatal(err)
 	}
 	time.Sleep(time.Hour)

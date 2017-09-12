@@ -43,10 +43,11 @@ type Options struct {
 	// Optional.
 	Addr string
 
-	// NoShutdownCleanup tells the agent not to automatically cleanup
-	// resources if the running process receives an interrupt.
+	// ShutdownCleanup automatically cleans up resources if the
+	// running process receives an interrupt. Otherwise, users
+	// can call Close before shutting down.
 	// Optional.
-	NoShutdownCleanup bool
+	ShutdownCleanup bool
 }
 
 // Listen starts the gops agent on a host process. Once agent started, users
@@ -58,13 +59,10 @@ type Options struct {
 // Note: The agent exposes an endpoint via a TCP connection that can be used by
 // any program on the system. Review your security requirements before starting
 // the agent.
-func Listen(opts *Options) error {
+func Listen(opts Options) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if opts == nil {
-		opts = &Options{}
-	}
 	if portfile != "" {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
 	}
@@ -77,7 +75,7 @@ func Listen(opts *Options) error {
 	if err != nil {
 		return err
 	}
-	if !opts.NoShutdownCleanup {
+	if opts.ShutdownCleanup {
 		gracefulShutdown()
 	}
 
