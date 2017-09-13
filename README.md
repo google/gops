@@ -15,7 +15,7 @@ $ gops
 
 ## Installation
 
-```
+```sh
 $ go get -u github.com/google/gops
 ```
 
