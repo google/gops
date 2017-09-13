@@ -66,6 +66,13 @@ $ gops
 51130 51128  gocode        go1.9 (/Users/jbd/bin/gocode)
 ```
 
+The output displays:
+* PID
+* PPID
+* name of the program
+* Go version used to build the program,
+* Location of the associated program
+
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
 #### $ gops stack (\<pid\>|\<addr\>)
