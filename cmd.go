@@ -65,11 +65,15 @@ func trace(addr net.TCPAddr) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmpfile.Name())
 	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
 		return err
 	}
 	fmt.Printf("Trace dump saved to: %s\n", tmpfile.Name())
+	// If go tool chain not found, stopping here and keep trace file.
+	if _, err := exec.LookPath("go"); err != nil {
+		return nil
+	}
+	defer os.Remove(tmpfile.Name())
 	cmd := exec.Command("go", "tool", "trace", tmpfile.Name())
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
@@ -92,10 +96,15 @@ func pprof(addr net.TCPAddr, p byte) error {
 		if len(out) == 0 {
 			return errors.New("failed to read the profile")
 		}
-		defer os.Remove(tmpDumpFile.Name())
 		if err := ioutil.WriteFile(tmpDumpFile.Name(), out, 0); err != nil {
 			return err
 		}
+		fmt.Printf("Profile dump saved to: %s\n", tmpDumpFile.Name())
+		// If go tool chain not found, stopping here and keep dump file.
+		if _, err := exec.LookPath("go"); err != nil {
+			return nil
+		}
+		defer os.Remove(tmpDumpFile.Name())
 	}
 	// Download running binary
 	tmpBinFile, err := ioutil.TempFile("", "binary")
