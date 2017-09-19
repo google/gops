@@ -1,7 +1,7 @@
 # gops
 
 [![Build status](https://circleci.com/gh/google/gops/tree/master.svg?style=shield&circle-token=2637dc1e57d5407ae250480a86a2e553a7d20482)](https://circleci.com/gh/google/gops)
-[![GoDoc](https://godoc.org/github.com/google/gops/agent?status.svg)](https://godoc.org/github.com/google/gops/agent)
+[![GoDoc](https://godoc.org/github.com/google/gops?status.svg)](https://godoc.org/github.com/google/gops)
 
 gops is a command to list and diagnose Go processes currently running on your system.
 
