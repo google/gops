@@ -20,17 +20,18 @@ const helpText = `Usage: gops is a tool to list and diagnose Go processes.
 
 
 Commands:
-    stack       Prints the stack trace.
-    gc          Runs the garbage collector and blocks until successful.
-    memstats    Prints the allocation and garbage collection stats.
-    version     Prints the Go version used to build the program.
-    stats       Prints the vital runtime stats.
-    help        Prints this help text.
+    stack       	Prints the stack trace.
+    gc          	Runs the garbage collector and blocks until successful.
+    setgc	        Sets the garbage collection target percentage.
+    memstats    	Prints the allocation and garbage collection stats.
+    version     	Prints the Go version used to build the program.
+    stats       	Prints the vital runtime stats.
+    help        	Prints this help text.
 
 Profiling commands:
-    trace       Runs the runtime tracer for 5 secs and launches "go tool trace".
-    pprof-heap  Reads the heap profile and launches "go tool pprof".
-    pprof-cpu   Reads the CPU profile and launches "go tool pprof".
+    trace       	Runs the runtime tracer for 5 secs and launches "go tool trace".
+    pprof-heap  	Reads the heap profile and launches "go tool pprof".
+    pprof-cpu   	Reads the CPU profile and launches "go tool pprof".
 
 
 All commands require the agent running on the Go process.
@@ -60,7 +61,11 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
 		os.Exit(1)
 	}
-	if err := fn(*addr); err != nil {
+	var params []string
+	if len(os.Args) > 3 {
+		params = append(params, os.Args[3:]...)
+	}
+	if err := fn(*addr, params); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
