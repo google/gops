@@ -236,7 +236,7 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(conn, "New GC percent set to %v. Previous value %v \n", perc, debug.SetGCPercent(int(perc)))
+		fmt.Fprintf(conn, "New GC percent set to %v. Previous value was %v.\n", perc, debug.SetGCPercent(int(perc)))
 	}
 	return nil
 }

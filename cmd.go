@@ -32,11 +32,11 @@ var cmds = map[string](func(addr net.TCPAddr, params []string) error){
 	"setgc":      setGC,
 }
 
-func setGC(addr net.TCPAddr, p []string) error {
-	if len(p) != 1 {
-		fmt.Println("Missing foo")
+func setGC(addr net.TCPAddr, params []string) error {
+	if len(params) != 1 {
+		return errors.New("missing gc percentage")
 	}
-	perc, err := strconv.ParseInt(p[0], 10, strconv.IntSize)
+	perc, err := strconv.ParseInt(params[0], 10, strconv.IntSize)
 	if err != nil {
 		return err
 	}
@@ -157,8 +157,8 @@ func stats(addr net.TCPAddr, _ []string) error {
 	return cmdWithPrint(addr, signal.Stats)
 }
 
-func cmdWithPrint(addr net.TCPAddr, c byte, p ...byte) error {
-	out, err := cmd(addr, c, p...)
+func cmdWithPrint(addr net.TCPAddr, c byte, params ...byte) error {
+	out, err := cmd(addr, c, params...)
 	if err != nil {
 		return err
 	}
