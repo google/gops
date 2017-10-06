@@ -7,6 +7,8 @@
 package agent
 
 import (
+	"bufio"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,13 +16,12 @@ import (
 	"os"
 	gosignal "os/signal"
 	"runtime"
+	"runtime/debug"
 	"runtime/pprof"
 	"runtime/trace"
 	"strconv"
 	"sync"
 	"time"
-
-	"bufio"
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
@@ -163,7 +164,7 @@ func formatBytes(val uint64) string {
 	return fmt.Sprintf("%d bytes", val)
 }
 
-func handle(conn io.Writer, msg []byte) error {
+func handle(conn io.ReadWriter, msg []byte) error {
 	switch msg[0] {
 	case signal.StackTrace:
 		return pprof.Lookup("goroutine").WriteTo(conn, 2)
@@ -230,6 +231,12 @@ func handle(conn io.Writer, msg []byte) error {
 		trace.Start(conn)
 		time.Sleep(5 * time.Second)
 		trace.Stop()
+	case signal.SetGCPercent:
+		perc, err := binary.ReadVarint(bufio.NewReader(conn))
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(conn, "New GC percent set to %v. Previous value was %v.\n", perc, debug.SetGCPercent(int(perc)))
 	}
 	return nil
 }
