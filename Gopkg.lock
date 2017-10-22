@@ -3,6 +3,18 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/StackExchange/wmi"
+  packages = ["."]
+  revision = "ea383cf3ba6ec950874b8486cd72356d007c768f"
+
+[[projects]]
+  name = "github.com/go-ole/go-ole"
+  packages = [".","oleutil"]
+  revision = "0e87ea779d9deb219633b828a023b32e1244dd57"
+  version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
   name = "github.com/kardianos/osext"
   packages = ["."]
   revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
@@ -14,10 +26,22 @@
   revision = "668c8856d9992f97248b3177d45743d2cc1068db"
 
 [[projects]]
+  name = "github.com/shirou/gopsutil"
+  packages = ["cpu","host","internal/common","mem","net","process"]
+  revision = "6e221c482653ef05c9f6a7bf71ddceea0e40bac5"
+  version = "v2.17.09"
+
+[[projects]]
   branch = "master"
-  name = "golang.org/x/arch"
-  packages = ["arm/armasm","ppc64/ppc64asm","x86/x86asm"]
-  revision = "f185940480d2c897e1ca8cf2f1be122e1258341b"
+  name = "github.com/shirou/w32"
+  packages = ["."]
+  revision = "bb4de0191aa41b5507caa14b0650cdbddcd9280b"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix","windows"]
+  revision = "8dbc5d05d6edcc104950cc299a1ce6641235bc86"
 
 [[projects]]
   name = "rsc.io/goversion"
@@ -28,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4b494828d559e89fc1fe70b9bfdd0f5c8ad62ee16258a3b2bcf1028c140faa32"
+  inputs-digest = "4a41a49d435568e9e6d4280f3501acc5ff1e4d7feef380311143ba102f604d63"
   solver-name = "gps-cdcl"
   solver-version = 1
