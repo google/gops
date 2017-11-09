@@ -15,7 +15,13 @@ import (
 	"strings"
 )
 
+var configDir string
+
 func ConfigDir() (string, error) {
+	if configDir != "" {
+		return configDir, nil
+	}
+
 	if runtime.GOOS == "windows" {
 		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}
@@ -32,6 +38,10 @@ func guessUnixHomeDir() string {
 		return usr.HomeDir
 	}
 	return os.Getenv("HOME")
+}
+
+func SetConfigDir(dir string) {
+	configDir = dir
 }
 
 func PIDFile(pid int) (string, error) {

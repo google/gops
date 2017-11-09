@@ -44,6 +44,11 @@ type Options struct {
 	// Optional.
 	Addr string
 
+	// ConfigDir is dir which storage the config file
+	// pid as filename and port as content.
+	// Optional.
+	ConfigDir string
+
 	// ShutdownCleanup automatically cleans up resources if the
 	// running process receives an interrupt. Otherwise, users
 	// can call Close before shutting down.
@@ -68,6 +73,9 @@ func Listen(opts Options) error {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
 	}
 
+	if opts.ConfigDir != "" {
+		internal.SetConfigDir(opts.ConfigDir)
+	}
 	gopsdir, err := internal.ConfigDir()
 	if err != nil {
 		return err
