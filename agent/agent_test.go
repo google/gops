@@ -34,7 +34,8 @@ func TestAgentClose(t *testing.T) {
 
 func TestUseCustomConfigDir(t *testing.T) {
 	err := Listen(Options{
-		ConfigDir: os.TempDir(),
+		ConfigDir:       os.TempDir(),
+		ShutdownCleanup: true,
 	})
 	if err != nil {
 		t.Fatal(err)
