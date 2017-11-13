@@ -15,8 +15,10 @@ import (
 	"strings"
 )
 
+const gopsConfigDirEnvKey = "GOPS_CONFIG_DIR"
+
 func ConfigDir() (string, error) {
-	if configDir := os.Getenv("GOPS_CONFIG_DIR"); configDir != "" {
+	if configDir := os.Getenv(gopsConfigDirEnvKey); configDir != "" {
 		return configDir, nil
 	}
 

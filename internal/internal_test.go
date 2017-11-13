@@ -6,7 +6,7 @@ import (
 )
 
 func TestConfigDir(t *testing.T) {
-	key := "GOPS_CONFIG_DIR"
+	key := gopsConfigDirEnvKey
 	oldDir := os.Getenv(key)
 	defer os.Setenv(key, oldDir)
 
@@ -18,6 +18,6 @@ func TestConfigDir(t *testing.T) {
 	}
 
 	if g, w := configDir, newDir; g != w {
-		t.Errorf("ConfigDir: want=%v got=%v", w, g)
+		t.Errorf("ConfigDir: got=%v want=%v", g, w)
 	}
 }
