@@ -15,27 +15,19 @@ import (
 	"strings"
 )
 
-var configDir string
-
 func ConfigDir() (string, error) {
-	if configDir != "" {
+	if configDir := os.Getenv("GOPS_CONFIG_DIR"); configDir != "" {
 		return configDir, nil
 	}
 
-	if cd := os.Getenv("GOPS_CONFIG_DIR"); cd != "" {
-		configDir = cd
-	} else {
-		if runtime.GOOS == "windows" {
-			configDir = filepath.Join(os.Getenv("APPDATA"), "gops")
-		} else {
-			homeDir := guessUnixHomeDir()
-			if homeDir == "" {
-				return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
-			}
-			configDir = filepath.Join(homeDir, ".config", "gops")
-		}
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}
-	return configDir, nil
+	homeDir := guessUnixHomeDir()
+	if homeDir == "" {
+		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
+	}
+	return filepath.Join(homeDir, ".config", "gops"), nil
 }
 
 func guessUnixHomeDir() string {
@@ -44,10 +36,6 @@ func guessUnixHomeDir() string {
 		return usr.HomeDir
 	}
 	return os.Getenv("HOME")
-}
-
-func SetConfigDir(dir string) {
-	configDir = dir
 }
 
 func PIDFile(pid int) (string, error) {

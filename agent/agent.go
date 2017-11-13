@@ -44,8 +44,8 @@ type Options struct {
 	// Optional.
 	Addr string
 
-	// ConfigDir is dir which storage the config file
-	// pid as filename and port as content.
+	// ConfigDir is the directory to store the configuration file,
+	// PID of the gops process, filename, port as well as content.
 	// Optional.
 	ConfigDir string
 
@@ -73,14 +73,17 @@ func Listen(opts Options) error {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
 	}
 
-	if opts.ConfigDir != "" {
-		internal.SetConfigDir(opts.ConfigDir)
+	// new
+	gopsdir := opts.ConfigDir
+	if gopsdir == "" {
+		cfgDir, err := internal.ConfigDir()
+		if err != nil {
+			return err
+		}
+		gopsdir = cfgDir
 	}
-	gopsdir, err := internal.ConfigDir()
-	if err != nil {
-		return err
-	}
-	err = os.MkdirAll(gopsdir, os.ModePerm)
+
+	err := os.MkdirAll(gopsdir, os.ModePerm)
 	if err != nil {
 		return err
 	}
