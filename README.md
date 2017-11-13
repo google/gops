@@ -45,6 +45,9 @@ func main() {
 }
 ```
 
+Otherwise, you could set `GOPS_CONFIG_DIR` environment variables to assign your config dir.
+Default, gops will use the current user's home directory(AppData on windows).
+
 ### Manual
 
 It is possible to use gops tool both in local and remote mode.
