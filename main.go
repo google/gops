@@ -16,8 +16,11 @@ import (
 	"github.com/google/gops/goprocess"
 )
 
-const helpText = `Usage: gops is a tool to list and diagnose Go processes.
+const helpText = `gops is a tool to list and diagnose Go processes.
 
+Usage:
+
+    gops [command [pid|address:port]]
 
 Commands:
     stack       	Prints the stack trace.
