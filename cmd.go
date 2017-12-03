@@ -169,7 +169,7 @@ func cmdWithPrint(addr net.TCPAddr, c byte, params ...byte) error {
 // targetToAddr tries to parse the target string, be it remote host:port
 // or local process's PID.
 func targetToAddr(target string) (*net.TCPAddr, error) {
-	if strings.Index(target, ":") != -1 {
+	if strings.Contains(target, ":") {
 		// addr host:port passed
 		var err error
 		addr, err := net.ResolveTCPAddr("tcp", target)
