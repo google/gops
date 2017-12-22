@@ -7,9 +7,6 @@ package main
 import "testing"
 
 func Test_shortenVersion(t *testing.T) {
-	type args struct {
-		v string
-	}
 	tests := []struct {
 		version string
 		want    string
