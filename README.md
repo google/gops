@@ -57,7 +57,7 @@ To use gops in a remote mode you need to know target's agent address.
 
 In Local mode use process's PID as a target; in Remote mode target is a `host:port` combination.
 
-#### 0. Listing all processes running locally
+#### Listing all processes running locally
 
 To print all go processes, run `gops` without arguments:
 
@@ -72,8 +72,8 @@ $ gops
 The output displays:
 * PID
 * PPID
-* name of the program
-* Go version used to build the program,
+* Name of the program
+* Go version used to build the program
 * Location of the associated program
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
