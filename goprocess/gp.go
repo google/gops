@@ -27,15 +27,14 @@ type P struct {
 
 // FindAll returns all the Go processes currently running on this host.
 func FindAll() []P {
-	var results []P
-
 	pss, err := ps.Processes()
 	if err != nil {
-		return results
+		return nil
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(pss))
+	found := make(chan P)
 
 	for _, pr := range pss {
 		pr := pr
@@ -49,17 +48,24 @@ func FindAll() []P {
 			if !ok {
 				return
 			}
-			results = append(results, P{
+			found <- P{
 				PID:          pr.Pid(),
 				PPID:         pr.PPid(),
 				Exec:         pr.Executable(),
 				Path:         path,
 				BuildVersion: version,
 				Agent:        agent,
-			})
+			}
 		}()
 	}
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(found)
+	}()
+	var results []P
+	for p := range found {
+		results = append(results, p)
+	}
 	return results
 }
 
