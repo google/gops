@@ -29,6 +29,3 @@
   branch = "master"
   name = "github.com/keybase/go-ps"
 
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/arch"

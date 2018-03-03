@@ -62,6 +62,7 @@ func TestIEnumVariant_wmi(t *testing.T) {
 		t.Error("Enum is nil")
 		t.FailNow()
 	}
+	defer enum.Release()
 
 	for tmp, length, err := enum.Next(1); length > 0; tmp, length, err = enum.Next(1) {
 		if err != nil {
@@ -82,10 +83,11 @@ func TestIEnumVariant_wmi(t *testing.T) {
 		}
 		defer props_enum_property.Clear()
 
-		_, err = props_enum_property.ToIUnknown().IEnumVARIANT(IID_IEnumVariant)
+		props_enum, err := props_enum_property.ToIUnknown().IEnumVARIANT(IID_IEnumVariant)
 		if err != nil {
 			t.Errorf("IEnumVARIANT failed with %v", err)
 		}
+		defer props_enum.Release()
 
 		class_variant, err := tmp_dispatch.GetProperty("Name")
 		if err != nil {
