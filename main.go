@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/gops/goprocess"
 	"github.com/shirou/gopsutil/process"
+	"github.com/xlab/treeprint"
 )
 
 const helpText = `gops is a tool to list and diagnose Go processes.
@@ -61,6 +62,12 @@ func main() {
 	if cmd == "help" {
 		usage("")
 	}
+
+	if cmd == "tree" {
+		displayProcessTree()
+		return
+	}
+
 	fn, ok := cmds[cmd]
 	if !ok {
 		usage("unknown subcommand")
@@ -146,6 +153,47 @@ func processInfo(pid int) {
 					conn.Laddr.IP, conn.Laddr.Port, conn.Raddr.IP, conn.Raddr.Port, conn.Status)
 			}
 		}
+	}
+}
+
+// pstree contains a mapping between the PPIDs and the child processes.
+var pstree map[int][]goprocess.P
+
+// displayProcessTree displays a tree of all the running Go processes.
+func displayProcessTree() {
+	ps := goprocess.FindAll()
+	pstree = make(map[int][]goprocess.P)
+	for _, p := range ps {
+		pstree[p.PPID] = append(pstree[p.PPID], p)
+	}
+	tree := treeprint.New()
+	treeprint.EdgeTypeStart = "..."
+	seen := map[int]bool{}
+	for _, p := range ps {
+		constructProcessTree(p.PPID, p, seen, tree)
+	}
+	fmt.Println(tree.String())
+}
+
+// constructProcessTree constructs the process tree in a depth-first fashion.
+func constructProcessTree(ppid int, process goprocess.P, seen map[int]bool, tree treeprint.Tree) {
+	if seen[ppid] {
+		return
+	}
+	seen[ppid] = true
+	if ppid != process.PPID {
+		output := strconv.Itoa(ppid) + " (" + process.Exec + ")" + " {" + process.BuildVersion + "}"
+		if process.Agent {
+			tree = tree.AddMetaBranch("*", output)
+		} else {
+			tree = tree.AddBranch(output)
+		}
+	} else {
+		tree = tree.AddBranch(ppid)
+	}
+	for index := range pstree[ppid] {
+		process := pstree[ppid][index]
+		constructProcessTree(process.PID, process, seen, tree)
 	}
 }
 

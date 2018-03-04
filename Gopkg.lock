@@ -52,6 +52,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/xlab/treeprint"
+  packages = ["."]
+  revision = "0f25eb5b1a4bacd40b67f48bce6248421a1e9c04"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = [
     "unix",
@@ -68,6 +74,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a41a49d435568e9e6d4280f3501acc5ff1e4d7feef380311143ba102f604d63"
+  inputs-digest = "c5be4702069d1d0de4909a4b31672b5345e0dd3fc5d61b3cba35a7d408b45bb5"
   solver-name = "gps-cdcl"
   solver-version = 1
