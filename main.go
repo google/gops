@@ -72,6 +72,9 @@ func main() {
 	if !ok {
 		usage("unknown subcommand")
 	}
+	if len(os.Args) < 3 {
+		usage("pid/addr of target process not specified")
+	}
 	addr, err := targetToAddr(os.Args[2])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
