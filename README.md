@@ -78,6 +78,23 @@ The output displays:
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
+#### $ gops tree
+
+To display a process tree with all the running Go processes, run the following command:
+
+```sh
+$ gops tree
+
+...
+├── 1
+│   └── 13962 [gocode] {go1.9}
+├── 557
+│   └── 635 [com.docker.supervisor] {go1.9.2}
+│       └── 638 [com.docker.driver.amd64-linux] {go1.9.2}
+└── 13744
+    └── 67243 [gops] {go1.10}
+```
+
 #### $ gops stack (\<pid\>|\<addr\>)
 
 In order to print the current stack trace from a target program, run the following command:
