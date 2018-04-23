@@ -7,10 +7,10 @@ gops is a command to list and diagnose Go processes currently running on your sy
 
 ```sh
 $ gops
-983   980    uplink-soecks go1.9 (/usr/local/bin/uplink-soecks)
-52697 52695  gops          go1.9 (/Users/jbd/bin/gops)
-4132  4130   foops*        go1.9 (/Users/jbd/bin/foops)
-51130 51128  gocode        go1.9 (/Users/jbd/bin/gocode)
+983   980    uplink-soecks  go1.9   /usr/local/bin/uplink-soecks
+52697 52695  gops           go1.10  /Users/jbd/bin/gops
+4132  4130   foops        * go1.9   /Users/jbd/bin/foops
+51130 51128  gocode         go1.9.2 /Users/jbd/bin/gocode
 ```
 
 ## Installation
@@ -57,26 +57,43 @@ To use gops in a remote mode you need to know target's agent address.
 
 In Local mode use process's PID as a target; in Remote mode target is a `host:port` combination.
 
-#### 0. Listing all processes running locally
+#### Listing all processes running locally
 
 To print all go processes, run `gops` without arguments:
 
 ```sh
 $ gops
-983   980    uplink-soecks go1.9 (/usr/local/bin/uplink-soecks)
-52697 52695  gops          go1.9 (/Users/jbd/bin/gops)
-4132  4130   foops*        go1.9 (/Users/jbd/bin/foops)
-51130 51128  gocode        go1.9 (/Users/jbd/bin/gocode)
+983   980    uplink-soecks  go1.9   /usr/local/bin/uplink-soecks
+52697 52695  gops           go1.10  /Users/jbd/bin/gops
+4132  4130   foops        * go1.9   /Users/jbd/bin/foops
+51130 51128  gocode         go1.9.2 /Users/jbd/bin/gocode
 ```
 
 The output displays:
 * PID
 * PPID
-* name of the program
-* Go version used to build the program,
+* Name of the program
+* Go version used to build the program
 * Location of the associated program
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
+
+#### $ gops \<pid\>
+
+To report more information about a process, run `gops` following by a PID:
+
+```sh
+$ gops <pid>
+parent PID:	5985
+threads:	27
+memory usage:	0.199%
+cpu usage:	0.139%
+username:	jbd
+cmd+args:	/Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice Helper -pid 5985
+local/remote:	127.0.0.1:56765 <-> :0 (LISTEN)
+local/remote:	127.0.0.1:56765 <-> 127.0.0.1:50955 (ESTABLISHED)
+local/remote:	100.76.175.164:52353 <-> 54.241.191.232:443 (ESTABLISHED)
+```
 
 #### $ gops tree
 
@@ -127,7 +144,6 @@ To print the current memory stats, run the following command:
 $ gops memstats (<pid>|<addr>)
 ```
 
-
 #### $ gops gc (\<pid\>|\<addr\>)
 
 If you want to force run garbage collection on the target program, run `gc`.
@@ -141,7 +157,6 @@ The following command sets it to 10%:
 ``` sh
 $ gops setgc (<pid>|<addr>) 10
 ```
-
 
 #### $ gops version (\<pid\>|\<addr\>)
 
