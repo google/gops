@@ -3,6 +3,7 @@
 package mem
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,10 @@ import (
 )
 
 func VirtualMemory() (*VirtualMemoryStat, error) {
+	return VirtualMemoryWithContext(context.Background())
+}
+
+func VirtualMemoryWithContext(ctx context.Context) (*VirtualMemoryStat, error) {
 	filename := common.HostProc("meminfo")
 	lines, _ := common.ReadLines(filename)
 	// flag if MemAvailable is in /proc/meminfo (kernel 3.14+)
@@ -60,18 +65,26 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 			ret.PageTables = t * 1024
 		case "SwapCached":
 			ret.SwapCached = t * 1024
+		case "CommitLimit":
+			ret.CommitLimit = t * 1024
+		case "Committed_AS":
+			ret.CommittedAS = t * 1024
 		}
 	}
 	if !memavail {
 		ret.Available = ret.Free + ret.Buffers + ret.Cached
 	}
-	ret.Used = ret.Total - ret.Available
-	ret.UsedPercent = float64(ret.Total-ret.Available) / float64(ret.Total) * 100.0
+	ret.Used = ret.Total - ret.Free - ret.Buffers - ret.Cached
+	ret.UsedPercent = float64(ret.Used) / float64(ret.Total) * 100.0
 
 	return ret, nil
 }
 
 func SwapMemory() (*SwapMemoryStat, error) {
+	return SwapMemoryWithContext(context.Background())
+}
+
+func SwapMemoryWithContext(ctx context.Context) (*SwapMemoryStat, error) {
 	sysinfo := &unix.Sysinfo_t{}
 
 	if err := unix.Sysinfo(sysinfo); err != nil {

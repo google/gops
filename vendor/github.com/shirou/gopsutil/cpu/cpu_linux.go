@@ -3,6 +3,7 @@
 package cpu
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -19,7 +20,7 @@ func init() {
 	if err != nil {
 		return
 	}
-	out, err := invoke.Command(getconf, "CLK_TCK")
+	out, err := invoke.CommandWithContext(context.Background(), getconf, "CLK_TCK")
 	// ignore errors
 	if err == nil {
 		i, err := strconv.ParseFloat(strings.TrimSpace(string(out)), 64)
@@ -30,6 +31,10 @@ func init() {
 }
 
 func Times(percpu bool) ([]TimesStat, error) {
+	return TimesWithContext(context.Background(), percpu)
+}
+
+func TimesWithContext(ctx context.Context, percpu bool) ([]TimesStat, error) {
 	filename := common.HostProc("stat")
 	var lines = []string{}
 	if percpu {
@@ -104,6 +109,10 @@ func finishCPUInfo(c *InfoStat) error {
 // For example a single socket board with two cores each with HT will
 // return 4 CPUInfoStat structs on Linux and the "Cores" field set to 1.
 func Info() ([]InfoStat, error) {
+	return InfoWithContext(context.Background())
+}
+
+func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 	filename := common.HostProc("cpuinfo")
 	lines, _ := common.ReadLines(filename)
 

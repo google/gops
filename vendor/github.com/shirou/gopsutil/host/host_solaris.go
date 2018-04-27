@@ -3,6 +3,7 @@ package host
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,6 +18,10 @@ import (
 )
 
 func Info() (*InfoStat, error) {
+	return InfoWithContext(context.Background())
+}
+
+func InfoWithContext(ctx context.Context) (*InfoStat, error) {
 	result := &InfoStat{
 		OS: runtime.GOOS,
 	}
@@ -33,7 +38,7 @@ func Info() (*InfoStat, error) {
 		return nil, err
 	}
 
-	out, err := invoke.Command(uname, "-srv")
+	out, err := invoke.CommandWithContext(ctx, uname, "-srv")
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +87,7 @@ func Info() (*InfoStat, error) {
 		// If everything works, use the current zone ID as the HostID if present.
 		zonename, err := exec.LookPath("/usr/bin/zonename")
 		if err == nil {
-			out, err := invoke.Command(zonename)
+			out, err := invoke.CommandWithContext(ctx, zonename)
 			if err == nil {
 				sc := bufio.NewScanner(bytes.NewReader(out))
 				for sc.Scan() {
@@ -109,7 +114,7 @@ func Info() (*InfoStat, error) {
 	if result.HostID == "" {
 		hostID, err := exec.LookPath("/usr/bin/hostid")
 		if err == nil {
-			out, err := invoke.Command(hostID)
+			out, err := invoke.CommandWithContext(ctx, hostID)
 			if err == nil {
 				sc := bufio.NewScanner(bytes.NewReader(out))
 				for sc.Scan() {
@@ -142,12 +147,16 @@ func Info() (*InfoStat, error) {
 var kstatMatch = regexp.MustCompile(`([^\s]+)[\s]+([^\s]*)`)
 
 func BootTime() (uint64, error) {
+	return BootTimeWithContext(context.Background())
+}
+
+func BootTimeWithContext(ctx context.Context) (uint64, error) {
 	kstat, err := exec.LookPath("/usr/bin/kstat")
 	if err != nil {
 		return 0, err
 	}
 
-	out, err := invoke.Command(kstat, "-p", "unix:0:system_misc:boot_time")
+	out, err := invoke.CommandWithContext(ctx, kstat, "-p", "unix:0:system_misc:boot_time")
 	if err != nil {
 		return 0, err
 	}
@@ -161,6 +170,10 @@ func BootTime() (uint64, error) {
 }
 
 func Uptime() (uint64, error) {
+	return UptimeWithContext(context.Background())
+}
+
+func UptimeWithContext(ctx context.Context) (uint64, error) {
 	bootTime, err := BootTime()
 	if err != nil {
 		return 0, err
@@ -173,25 +186,41 @@ func uptimeSince(since uint64) uint64 {
 }
 
 func Users() ([]UserStat, error) {
+	return UsersWithContext(context.Background())
+}
+
+func UsersWithContext(ctx context.Context) ([]UserStat, error) {
 	return []UserStat{}, common.ErrNotImplementedError
 }
 
 func SensorsTemperatures() ([]TemperatureStat, error) {
+	return SensorsTemperaturesWithContext(context.Background())
+}
+
+func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, error) {
 	return []TemperatureStat{}, common.ErrNotImplementedError
 }
 
 func Virtualization() (string, string, error) {
+	return VirtualizationWithContext(context.Background())
+}
+
+func VirtualizationWithContext(ctx context.Context) (string, string, error) {
 	return "", "", common.ErrNotImplementedError
 }
 
 func KernelVersion() (string, error) {
+	return KernelVersionWithContext(context.Background())
+}
+
+func KernelVersionWithContext(ctx context.Context) (string, error) {
 	// Parse versions from output of `uname(1)`
 	uname, err := exec.LookPath("/usr/bin/uname")
 	if err != nil {
 		return "", err
 	}
 
-	out, err := invoke.Command(uname, "-srv")
+	out, err := invoke.CommandWithContext(ctx, uname, "-srv")
 	if err != nil {
 		return "", err
 	}
@@ -201,4 +230,19 @@ func KernelVersion() (string, error) {
 		return fields[1], nil
 	}
 	return "", fmt.Errorf("could not get kernel version")
+}
+
+func PlatformInformation() (platform string, family string, version string, err error) {
+	return PlatformInformationWithContext(context.Background())
+}
+
+func PlatformInformationWithContext(ctx context.Context) (platform string, family string, version string, err error) {
+	/* This is not finished yet at all. Please contribute! */
+
+	version, err = KernelVersion()
+	if err != nil {
+		return "", "", "", err
+	}
+
+	return "solaris", "solaris", version, nil
 }

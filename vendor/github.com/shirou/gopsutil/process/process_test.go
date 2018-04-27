@@ -3,6 +3,7 @@ package process
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"os/user"
 	"reflect"
 	"runtime"
@@ -219,6 +220,26 @@ func Test_Process_NumThread(t *testing.T) {
 	}
 }
 
+func Test_Process_Threads(t *testing.T) {
+	p := testGetProcess()
+
+	n, err := p.NumThreads()
+	if err != nil {
+		t.Errorf("geting NumThread error %v", err)
+	}
+	if n < 0 {
+		t.Errorf("invalid NumThread: %d", n)
+	}
+
+	ts, err := p.Threads()
+	if err != nil {
+		t.Errorf("geting Threads error %v", err)
+	}
+	if len(ts) != int(n) {
+		t.Errorf("unexpected number of threads: %v vs %v", len(ts), n)
+	}
+}
+
 func Test_Process_Name(t *testing.T) {
 	p := testGetProcess()
 
@@ -280,6 +301,10 @@ func Test_Process_CpuPercentLoop(t *testing.T) {
 }
 
 func Test_Process_CreateTime(t *testing.T) {
+	if os.Getenv("CIRCLECI") == "true" {
+		t.Skip("Skip CI")
+	}
+
 	p := testGetProcess()
 
 	c, err := p.CreateTime()
@@ -398,5 +423,24 @@ func Test_OpenFiles(t *testing.T) {
 	for _, vv := range v {
 		assert.NotEqual(t, "", vv.Path)
 	}
+}
 
+func Test_Kill(t *testing.T) {
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("choice", "/C", "YN", "/D", "Y", "/t", "3")
+	} else {
+		cmd = exec.Command("sleep", "3")
+	}
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		assert.NotNil(t, cmd.Run())
+		wg.Done()
+	}()
+	time.Sleep(100 * time.Millisecond)
+	p, err := NewProcess(int32(cmd.Process.Pid))
+	assert.Nil(t, err)
+	assert.Nil(t, p.Kill())
+	wg.Wait()
 }
