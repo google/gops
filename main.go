@@ -9,10 +9,12 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/gops/goprocess"
 	"github.com/shirou/gopsutil/process"
@@ -150,6 +152,9 @@ func processInfo(pid int) {
 	if v, err := p.Cmdline(); err == nil {
 		fmt.Printf("cmd+args:\t%v\n", v)
 	}
+	if v, err := elapsedTime(p); err == nil {
+		fmt.Printf("elapsed time:\t%v\n", v)
+	}
 	if v, err := p.Connections(); err == nil {
 		if len(v) > 0 {
 			for _, conn := range v {
@@ -158,6 +163,17 @@ func processInfo(pid int) {
 			}
 		}
 	}
+}
+
+// elapsedTime shows the elapsed time of the process indicating how long the
+// process has been running for.
+func elapsedTime(p *process.Process) (string, error) {
+	crtTime, err := p.CreateTime()
+	if err != nil {
+		return "", err
+	}
+	etime := time.Since(time.Unix(int64(crtTime/1000), 0))
+	return fmtEtimeDuration(etime), nil
 }
 
 // pstree contains a mapping between the PPIDs and the child processes.
@@ -234,4 +250,24 @@ func max(i, j int) int {
 		return i
 	}
 	return j
+}
+
+// fmtEtimeDuration formats etime's duration based on ps' format:
+// [[DD-]hh:]mm:ss
+// format specification: http://linuxcommand.org/lc3_man_pages/ps1.html
+func fmtEtimeDuration(d time.Duration) string {
+	days := d / (24 * time.Hour)
+	hours := d % (24 * time.Hour)
+	minutes := hours % time.Hour
+	seconds := math.Mod(minutes.Seconds(), 60)
+	var b bytes.Buffer
+	if days > 0 {
+		fmt.Fprintf(&b, "%02d-", days)
+	}
+	if hours/time.Hour > 0 {
+		fmt.Fprintf(&b, "%02d:", hours/time.Hour)
+	}
+	fmt.Fprintf(&b, "%02d:", minutes/time.Minute)
+	fmt.Fprintf(&b, "%02.0f", seconds)
+	return b.String()
 }
