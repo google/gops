@@ -1,6 +1,7 @@
 package net
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -11,11 +12,7 @@ import (
 	"github.com/shirou/gopsutil/internal/common"
 )
 
-var invoke common.Invoker
-
-func init() {
-	invoke = common.Invoke{}
-}
+var invoke common.Invoker = common.Invoke{}
 
 type IOCountersStat struct {
 	Name        string `json:"name"`        // interface name
@@ -111,6 +108,10 @@ func (n InterfaceAddr) String() string {
 }
 
 func Interfaces() ([]InterfaceStat, error) {
+	return InterfacesWithContext(context.Background())
+}
+
+func InterfacesWithContext(ctx context.Context) ([]InterfaceStat, error) {
 	is, err := net.Interfaces()
 	if err != nil {
 		return nil, err

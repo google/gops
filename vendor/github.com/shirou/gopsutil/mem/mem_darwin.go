@@ -3,6 +3,7 @@
 package mem
 
 import (
+	"context"
 	"encoding/binary"
 	"strconv"
 	"strings"
@@ -28,9 +29,13 @@ func getHwMemsize() (uint64, error) {
 
 // SwapMemory returns swapinfo.
 func SwapMemory() (*SwapMemoryStat, error) {
+	return SwapMemoryWithContext(context.Background())
+}
+
+func SwapMemoryWithContext(ctx context.Context) (*SwapMemoryStat, error) {
 	var ret *SwapMemoryStat
 
-	swapUsage, err := common.DoSysctrl("vm.swapusage")
+	swapUsage, err := common.DoSysctrlWithContext(ctx, "vm.swapusage")
 	if err != nil {
 		return ret, err
 	}

@@ -10,7 +10,7 @@ gopsutil: psutil for golang
 .. image:: https://godoc.org/github.com/shirou/gopsutil?status.svg
         :target: http://godoc.org/github.com/shirou/gopsutil
 
-This is a port of psutil (http://pythonhosted.org/psutil/). The challenge is porting all
+This is a port of psutil (https://github.com/giampaolo/psutil). The challenge is porting all
 psutil functions on some architectures.
 
 
@@ -43,7 +43,7 @@ Available Architectures
 - Linux i386/amd64/arm(raspberry pi)
 - Windows/amd64
 - Darwin i386/amd64
-- OpenBDS amd64 (Thank you @mpfz0r!)
+- OpenBSD amd64 (Thank you @mpfz0r!)
 - Solaris amd64 (developed and tested on SmartOS/Illumos, Thank you @jen20!)
 
 All works are implemented without cgo by porting c struct to golang struct.
@@ -86,6 +86,8 @@ You can set an alternative location to :code:`/proc` by setting the :code:`HOST_
 You can set an alternative location to :code:`/sys` by setting the :code:`HOST_SYS` environment variable.
 
 You can set an alternative location to :code:`/etc` by setting the :code:`HOST_ETC` environment variable.
+
+You can set an alternative location to :code:`/var` by setting the :code:`HOST_VAR` environment variable.
 
 Documentation
 ------------------------
@@ -185,7 +187,7 @@ boot_time             x      x       x       x       x
 users                 x      x       x       x       x
 pids                  x      x       x       x       x
 pid_exists            x      x       x       x       x
-net_connections       x                      x
+net_connections       x              x       x
 net_protocols         x
 net_if_addrs
 net_if_stats
@@ -200,7 +202,7 @@ name             Linux FreeBSD OpenBSD MacOSX Windows
 pid                 x     x      x       x       x
 ppid                x     x      x       x       x
 name                x     x      x       x       x
-cmdline             x                    x       x
+cmdline             x     x              x       x
 create_time         x                    x
 status              x     x      x       x
 cwd                 x
@@ -213,7 +215,7 @@ nice                x     x      x       x       x
 num_fds             x
 num_ctx_switches    x
 num_threads         x     x      x       x       x
-cpu_times           x
+cpu_times           x                            x
 memory_info         x     x      x       x       x
 memory_info_ex      x
 memory_maps         x
@@ -227,7 +229,7 @@ username            x     x      x       x       x
 ionice
 rlimit              x
 num_handlers
-threads
+threads             x
 cpu_percent         x            x       x
 cpu_affinity
 memory_percent
@@ -294,7 +296,7 @@ Related Works
 
 I have been influenced by the following great works:
 
-- psutil: http://pythonhosted.org/psutil/
+- psutil: https://github.com/giampaolo/psutil
 - dstat: https://github.com/dagwieers/dstat
 - gosigar: https://github.com/cloudfoundry/gosigar/
 - goprocinfo: https://github.com/c9s/goprocinfo
