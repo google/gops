@@ -139,9 +139,13 @@ func listen(key string) {
 			}
 			if !verify(keyBuf, key) {
 				fmt.Fprintf(os.Stderr, "gops: access denied. client: %s\n", fd.RemoteAddr())
+				fd.Write([]byte{0}) // login failed
 				fd.Write([]byte("access denied. Please set right GOPS_KEY\n"))
 				fd.Close()
 				continue
+
+			} else {
+				fd.Write([]byte{1}) // login success
 			}
 		}
 
