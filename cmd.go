@@ -184,6 +184,9 @@ func targetToAddr(target string) (*net.TCPAddr, error) {
 		return nil, fmt.Errorf("couldn't parse PID: %v", err)
 	}
 	port, err := internal.GetPort(pid)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get port for PID %s: %v", pid, err)
+	}
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:"+port)
 	return addr, nil
 }
