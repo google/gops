@@ -99,7 +99,7 @@ func nameTree(tree Tree, v interface{}) error {
 		}
 		branch := tree.AddBranch(name)
 		if err := nameTree(branch, val.Interface()); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}
@@ -144,7 +144,7 @@ func valueTree(tree Tree, v interface{}) error {
 		}
 		branch := tree.AddBranch(name)
 		if err := valueTree(branch, val.Interface()); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}
@@ -175,7 +175,7 @@ func tagTree(tree Tree, v interface{}) error {
 		}
 		branch := tree.AddMetaBranch(filteredTag, name)
 		if err := tagTree(branch, val.Interface()); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}
@@ -206,7 +206,7 @@ func typeTree(tree Tree, v interface{}) error {
 		}
 		branch := tree.AddMetaBranch(typename, name)
 		if err := typeTree(branch, val.Interface()); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}
@@ -237,7 +237,7 @@ func typeSizeTree(tree Tree, v interface{}) error {
 		}
 		branch := tree.AddMetaBranch(typesize, name)
 		if err := typeSizeTree(branch, val.Interface()); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}
@@ -281,7 +281,7 @@ func metaTree(tree Tree, v interface{}, fmtFunc FmtFunc) error {
 			branch = tree.AddBranch(name)
 		}
 		if err := metaTree(branch, val.Interface(), fmtFunc); err != nil {
-			err := fmt.Errorf("%v on struct branch %s", name)
+			err := fmt.Errorf("%v on struct branch %s", err, name)
 			return err
 		}
 	}

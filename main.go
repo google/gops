@@ -167,7 +167,7 @@ func displayProcessTree() {
 		pstree[p.PPID] = append(pstree[p.PPID], p)
 	}
 	tree := treeprint.New()
-	treeprint.EdgeTypeStart = "..."
+	tree.SetValue("...")
 	seen := map[int]bool{}
 	for _, p := range ps {
 		constructProcessTree(p.PPID, p, seen, tree)
