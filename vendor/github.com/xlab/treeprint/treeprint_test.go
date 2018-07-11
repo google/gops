@@ -62,6 +62,23 @@ func TestLevel(t *testing.T) {
 	assert.Equal(expected, actual)
 }
 
+func TestNamedRoot(t *testing.T) {
+	assert := assert.New(t)
+
+	tree := New()
+	tree.AddBranch("hello").AddNode("my friend").AddNode("lol")
+	tree.AddNode("world")
+	tree.SetValue("friends")
+	actual := tree.String()
+	expected := `friends
+├── hello
+│   ├── my friend
+│   └── lol
+└── world
+`
+	assert.Equal(expected, actual)
+}
+
 func TestDeepLevel(t *testing.T) {
 	assert := assert.New(t)
 

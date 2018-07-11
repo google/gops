@@ -54,7 +54,7 @@
   branch = "master"
   name = "github.com/xlab/treeprint"
   packages = ["."]
-  revision = "0f25eb5b1a4bacd40b67f48bce6248421a1e9c04"
+  revision = "d6fb6747feb6e7cfdc44682a024bddf87ef07ec2"
 
 [[projects]]
   branch = "master"
