@@ -72,6 +72,10 @@ func main() {
 	if !ok {
 		usage("unknown subcommand")
 	}
+	if len(os.Args) < 3 {
+		usage("Missing PID or address.")
+		os.Exit(1)
+	}
 	addr, err := targetToAddr(os.Args[2])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
