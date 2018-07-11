@@ -30,10 +30,14 @@ type Tree interface {
 	// FindByValue finds a node whose value matches the provided one by reflect.DeepEqual,
 	// returns nil if not found.
 	FindByValue(value Value) Tree
+	//  returns the last node of a tree
+	FindLastNode() Tree
 	// String renders the tree or subtree as a string.
 	String() string
 	// Bytes renders the tree or subtree as byteslice.
 	Bytes() []byte
+
+	SetValue(value Value)
 }
 
 type node struct {
@@ -41,6 +45,12 @@ type node struct {
 	Meta  MetaValue
 	Value Value
 	Nodes []*node
+}
+
+func (n *node) FindLastNode() Tree {
+	ns := n.Nodes
+	n = ns[len(ns)-1]
+	return n
 }
 
 func (n *node) AddNode(v Value) Tree {
@@ -117,7 +127,7 @@ func (n *node) Bytes() []byte {
 	level := 0
 	var levelsEnded []int
 	if n.Root == nil {
-		buf.WriteString(string(EdgeTypeStart))
+		buf.WriteString(fmt.Sprintf("%v",n.Value))
 		buf.WriteByte('\n')
 	} else {
 		edge := EdgeTypeMid
@@ -135,6 +145,10 @@ func (n *node) Bytes() []byte {
 
 func (n *node) String() string {
 	return string(n.Bytes())
+}
+
+func (n *node) SetValue(value Value){
+	n.Value = value
 }
 
 func printNodes(wr io.Writer,
@@ -182,12 +196,11 @@ func isEnded(levelsEnded []int, level int) bool {
 type EdgeType string
 
 var (
-	EdgeTypeStart EdgeType = "."
 	EdgeTypeLink  EdgeType = "│"
 	EdgeTypeMid   EdgeType = "├──"
 	EdgeTypeEnd   EdgeType = "└──"
 )
 
 func New() Tree {
-	return &node{}
+	return &node{Value: "."}
 }
