@@ -116,18 +116,18 @@ func listen() {
 	for {
 		fd, err := listener.Accept()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
+			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
 			if netErr, ok := err.(net.Error); ok && !netErr.Temporary() {
 				break
 			}
 			continue
 		}
 		if _, err := fd.Read(buf); err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
+			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
 			continue
 		}
 		if err := handle(fd, buf); err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v", err)
+			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
 			continue
 		}
 		fd.Close()
