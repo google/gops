@@ -231,11 +231,15 @@ func shortenVersion(v string) string {
 }
 
 func usage(msg string) {
+	// default exit code for the statement
+	exitCode := 0
 	if msg != "" {
+		// founded an unexpected command
 		fmt.Printf("gops: %v\n", msg)
+		exitCode = 1
 	}
 	fmt.Fprintf(os.Stderr, "%v\n", helpText)
-	os.Exit(1)
+	os.Exit(exitCode)
 }
 
 func pad(s string, total int) string {
