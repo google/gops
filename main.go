@@ -106,27 +106,46 @@ func processes() {
 
 	}
 
+	// Print header for all the entries
+	printColumnHeaders()
+
 	for _, p := range ps {
 		buf := bytes.NewBuffer(nil)
 		pid := strconv.Itoa(p.PID)
 		fmt.Fprint(buf, pad(pid, maxPID))
-		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, "\t")
 		ppid := strconv.Itoa(p.PPID)
 		fmt.Fprint(buf, pad(ppid, maxPPID))
-		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, "\t")
 		fmt.Fprint(buf, pad(p.Exec, maxExec))
 		if p.Agent {
 			fmt.Fprint(buf, "*")
 		} else {
-			fmt.Fprint(buf, " ")
+			fmt.Fprint(buf, "\t")
 		}
-		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, "\t")
 		fmt.Fprint(buf, pad(p.BuildVersion, maxVersion))
-		fmt.Fprint(buf, " ")
+		fmt.Fprint(buf, "\t")
 		fmt.Fprint(buf, p.Path)
 		fmt.Fprintln(buf)
 		buf.WriteTo(os.Stdout)
 	}
+}
+
+func printColumnHeaders() {
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprint(buf, "maxPID")
+	fmt.Fprint(buf, "\t")
+	fmt.Fprint(buf, "maxPPID")
+	fmt.Fprint(buf, "\t")
+	fmt.Fprint(buf, "maxExec")
+	fmt.Fprint(buf, "\t\t\t")
+	fmt.Fprint(buf, "maxVersion")
+	fmt.Fprint(buf, "\t")
+	fmt.Fprint(buf, "path")
+	fmt.Fprint(buf, "\t")
+	fmt.Fprintln(buf)
+	buf.WriteTo(os.Stdout)
 }
 
 func processInfo(pid int) {
