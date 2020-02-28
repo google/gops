@@ -20,6 +20,7 @@ import (
 	"runtime/pprof"
 	"runtime/trace"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -116,7 +117,10 @@ func listen() {
 	for {
 		fd, err := listener.Accept()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
+			// No great way to check for this, see https://golang.org/issues/4373.
+			if !strings.Contains(err.Error(), "use of closed network connection") {
+				fmt.Fprintf(os.Stderr, "gops: %v\n", err)
+			}
 			if netErr, ok := err.(net.Error); ok && !netErr.Temporary() {
 				break
 			}
