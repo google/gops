@@ -25,6 +25,11 @@ func ConfigDir() (string, error) {
 	if runtime.GOOS == "windows" {
 		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}
+
+	if xdgConfigDir := os.Getenv("XDG_CONFIG_HOME"); xdgConfigDir != "" {
+		return filepath.Join(xdgConfigDir, "gops"), nil
+	}
+
 	homeDir := guessUnixHomeDir()
 	if homeDir == "" {
 		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
