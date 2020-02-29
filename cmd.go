@@ -143,7 +143,6 @@ func pprof(addr net.TCPAddr, p byte) error {
 			return err
 		}
 	}
-	fmt.Printf("Profiling dump saved to: %s\n", tmpDumpFile.Name())
 	fmt.Printf("Binary file saved to: %s\n", tmpBinFile.Name())
 	cmd := exec.Command("go", "tool", "pprof", tmpBinFile.Name(), tmpDumpFile.Name())
 	cmd.Env = os.Environ()
