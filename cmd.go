@@ -63,12 +63,12 @@ func version(addr net.TCPAddr, _ []string) error {
 }
 
 func pprofHeap(addr net.TCPAddr, _ []string) error {
-	return pprof(addr, signal.HeapProfile)
+	return pprof(addr, signal.HeapProfile, "heap")
 }
 
 func pprofCPU(addr net.TCPAddr, _ []string) error {
 	fmt.Println("Profiling CPU now, will take 30 secs...")
-	return pprof(addr, signal.CPUProfile)
+	return pprof(addr, signal.CPUProfile, "cpu")
 }
 
 func trace(addr net.TCPAddr, _ []string) error {
@@ -101,9 +101,8 @@ func trace(addr net.TCPAddr, _ []string) error {
 	return cmd.Run()
 }
 
-func pprof(addr net.TCPAddr, p byte) error {
-
-	tmpDumpFile, err := ioutil.TempFile("", "profile")
+func pprof(addr net.TCPAddr, p byte, prefix string) error {
+	tmpDumpFile, err := ioutil.TempFile("", prefix+"_profile")
 	if err != nil {
 		return err
 	}
