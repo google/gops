@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/google/gops/internal"
@@ -139,12 +140,16 @@ func listen() {
 
 func gracefulShutdown() {
 	c := make(chan os.Signal, 1)
-	gosignal.Notify(c, os.Interrupt)
+	gosignal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		// cleanup the socket on shutdown.
-		<-c
+		sig := <-c
 		Close()
-		os.Exit(1)
+		ret := 1
+		if sig == syscall.SIGTERM {
+			ret = 0
+		}
+		os.Exit(ret)
 	}()
 }
 
