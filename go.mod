@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/StackExchange/wmi v0.0.0-20170410192909-ea383cf3ba6e // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
-	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1
 	github.com/keybase/go-ps v0.0.0-20161005175911-668c8856d999
 	github.com/shirou/gopsutil v0.0.0-20180427012116-c95755e4bcd7
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect

@@ -26,7 +26,6 @@ import (
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
-	"github.com/kardianos/osext"
 )
 
 const defaultAddr = "127.0.0.1:0"
@@ -237,7 +236,7 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		fmt.Fprintf(conn, "GOMAXPROCS: %v\n", runtime.GOMAXPROCS(0))
 		fmt.Fprintf(conn, "num CPU: %v\n", runtime.NumCPU())
 	case signal.BinaryDump:
-		path, err := osext.Executable()
+		path, err := os.Executable()
 		if err != nil {
 			return err
 		}
