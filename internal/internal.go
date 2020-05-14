@@ -22,6 +22,10 @@ func ConfigDir() (string, error) {
 		return configDir, nil
 	}
 
+	if osUserConfigDir := getOSUserConfigDir(); osUserConfigDir != "" {
+		return osUserConfigDir, nil
+	}
+
 	if runtime.GOOS == "windows" {
 		return filepath.Join(os.Getenv("APPDATA"), "gops"), nil
 	}
