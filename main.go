@@ -170,7 +170,7 @@ func elapsedTime(p *process.Process) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	etime := time.Since(time.Unix(int64(crtTime/1000), 0))
+	etime := time.Since(time.Unix(crtTime/1000, 0))
 	return fmtEtimeDuration(etime), nil
 }
 
