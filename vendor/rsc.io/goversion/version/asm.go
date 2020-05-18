@@ -6,7 +6,6 @@ package version
 
 import (
 	"encoding/binary"
-	"flag"
 	"fmt"
 	"os"
 )
@@ -14,9 +13,10 @@ import (
 type matcher [][]uint32
 
 const (
-	pWild uint32 = 0xff00
-	pAddr uint32 = 0x10000
-	pEnd  uint32 = 0x20000
+	pWild    uint32 = 0xff00
+	pAddr    uint32 = 0x10000
+	pEnd     uint32 = 0x20000
+	pRelAddr uint32 = 0x30000
 
 	opMaybe = 1 + iota
 	opMust
@@ -27,6 +27,11 @@ const (
 )
 
 var amd64Matcher = matcher{
+	{opMaybe | opAnchor,
+		// __rt0_amd64_darwin:
+		//	JMP __rt0_amd64
+		0xe9, pWild | pAddr, pWild, pWild, pWild | pEnd, 0xcc, 0xcc, 0xcc,
+	},
 	{opMaybe,
 		// _rt0_amd64_linux:
 		//	lea 0x8(%rsp), %rsi
@@ -48,6 +53,16 @@ var amd64Matcher = matcher{
 		0x48, 0x8b, 0x3c, 0x24,
 		0xb8, pWild | pAddr, pWild, pWild, pWild,
 		0xff, 0xe0,
+	},
+	{opMaybe,
+		// __rt0_amd64:
+		//	mov (%rsp), %rdi
+		//	lea 8(%rsp), %rsi
+		//	jmp runtime.rt0_g0
+		0x48, 0x8b, 0x3c, 0x24,
+		0x48, 0x8d, 0x74, 0x24, 0x08,
+		0xe9, pWild | pAddr, pWild, pWild, pWild | pEnd,
+		0xcc, 0xcc,
 	},
 	{opMaybe,
 		// _start (toward end)
@@ -86,6 +101,11 @@ var amd64Matcher = matcher{
 		0xb8, pWild | pAddr, pWild, pWild, pWild,
 		0xff, 0xe0,
 	},
+	{opMaybe | opAnchor,
+		// main:
+		//	JMP runtime.rt0_go(SB)
+		0xe9, pWild | pAddr, pWild, pWild, pWild | pEnd, 0xcc, 0xcc, 0xcc,
+	},
 	{opMust | opAnchor,
 		// rt0_go:
 		//	mov %rdi, %rax
@@ -109,7 +129,6 @@ var amd64Matcher = matcher{
 		//	callq runtime.args
 		//	callq runtime.osinit
 		//	callq runtime.schedinit (ADDR)
-		//	lea mainPC(%rip), %rax
 		0x89, 0x04, 0x24,
 		0x48, 0x8b, 0x44, 0x24, 0x18,
 		0x48, 0x89, 0x44, 0x24, 0x08,
@@ -196,20 +215,50 @@ var amd64Matcher = matcher{
 		0x48, 0xc7, 0x40, 0x08, 0x07, 0x00, 0x00, 0x00,
 	},
 	{opDone,
+		// schedinit (toward end)
+		//	cmpq $0x0, ADDR(%rip)
+		//	jne <short>
+		//	movq $0x7, ADDR(%rip)
+		0x48, 0x83, 0x3d, pWild | pAddr, pWild, pWild, pWild, 0x00,
+		0x75, pWild,
+		0x48, 0xc7, 0x05 | pEnd, pWild | pAddr, pWild, pWild, pWild, 0x07, 0x00, 0x00, 0x00,
+	},
+	{opDone,
 		//	test %eax, %eax
 		//	jne <later>
 		//	lea "unknown"(RIP), %rax
 		//	mov %rax, ADDR(%rip)
 		0x48, 0x85, 0xc0, 0x75, pWild, 0x48, 0x8d, 0x05, pWild, pWild, pWild, pWild, 0x48, 0x89, 0x05, pWild | pAddr, pWild, pWild, pWild | pEnd,
 	},
+	{opDone,
+		// schedinit (toward end)
+		//	mov ADDR(%rip), %rcx
+		//	test %rcx, %rcx
+		//	jne <short>
+		//	movq $0x7, ADDR(%rip)
+		//
+		0x48, 0x8b, 0x0d, pWild, pWild, pWild, pWild,
+		0x48, 0x85, 0xc9,
+		0x75, pWild,
+		0x48, 0xc7, 0x05 | pEnd, pWild | pAddr, pWild, pWild, pWild, 0x07, 0x00, 0x00, 0x00,
+	},
 }
 
-var debugMatch = flag.Bool("d", false, "print debug information")
+var DebugMatch bool
 
 func (m matcher) match(f exe, addr uint64) (uint64, bool) {
 	data, err := f.ReadData(addr, 512)
+	if DebugMatch {
+		fmt.Fprintf(os.Stderr, "data @%#x: %x\n", addr, data[:16])
+	}
 	if err != nil {
+		if DebugMatch {
+			fmt.Fprintf(os.Stderr, "match: %v\n", err)
+		}
 		return 0, false
+	}
+	if DebugMatch {
+		fmt.Fprintf(os.Stderr, "data: %x\n", data[:32])
 	}
 Matchers:
 	for pc, p := range m {
@@ -236,7 +285,7 @@ Matchers:
 				}
 			}
 			// matched
-			if *debugMatch {
+			if DebugMatch {
 				fmt.Fprintf(os.Stderr, "match (%d) %#x+%d %x %x\n", pc, addr, i, p, data[i:i+len(p)])
 			}
 			if a != -1 {
@@ -251,7 +300,7 @@ Matchers:
 				}
 			}
 			if op&^opFlags == opDone {
-				if *debugMatch {
+				if DebugMatch {
 					fmt.Fprintf(os.Stderr, "done %x\n", addr)
 				}
 				return addr, true
@@ -262,11 +311,14 @@ Matchers:
 				if err != nil {
 					return 0, false
 				}
+				if DebugMatch {
+					fmt.Fprintf(os.Stderr, "reload @%#x: %x\n", addr, data[:32])
+				}
 			}
 			continue Matchers
 		}
 		// not matched
-		if *debugMatch {
+		if DebugMatch {
 			fmt.Fprintf(os.Stderr, "no match (%d) %#x %x %x\n", pc, addr, p, data[:32])
 		}
 		if op&^opFlags == opMust {
@@ -280,6 +332,9 @@ Matchers:
 func readBuildVersionX86Asm(f exe) (isGo bool, buildVersion string) {
 	entry := f.Entry()
 	if entry == 0 {
+		if DebugMatch {
+			fmt.Fprintf(os.Stderr, "missing entry!\n")
+		}
 		return
 	}
 	addr, ok := amd64Matcher.match(f, entry)

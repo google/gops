@@ -29,6 +29,8 @@ type exe interface {
 	Close() error
 	ByteOrder() binary.ByteOrder
 	Entry() uint64
+	TextRange() (uint64, uint64)
+	RODataRange() (uint64, uint64)
 }
 
 func openExe(file string) (exe, error) {
@@ -117,6 +119,29 @@ func (x *elfExe) SectionNames() []string {
 	return names
 }
 
+func (x *elfExe) TextRange() (uint64, uint64) {
+	for _, p := range x.f.Progs {
+		if p.Type == elf.PT_LOAD && p.Flags&elf.PF_X != 0 {
+			return p.Vaddr, p.Vaddr + p.Filesz
+		}
+	}
+	return 0, 0
+}
+
+func (x *elfExe) RODataRange() (uint64, uint64) {
+	for _, p := range x.f.Progs {
+		if p.Type == elf.PT_LOAD && p.Flags&(elf.PF_R|elf.PF_W|elf.PF_X) == elf.PF_R {
+			return p.Vaddr, p.Vaddr + p.Filesz
+		}
+	}
+	for _, p := range x.f.Progs {
+		if p.Type == elf.PT_LOAD && p.Flags&(elf.PF_R|elf.PF_W|elf.PF_X) == (elf.PF_R|elf.PF_X) {
+			return p.Vaddr, p.Vaddr + p.Filesz
+		}
+	}
+	return 0, 0
+}
+
 type peExe struct {
 	os *os.File
 	f  *pe.File
@@ -191,6 +216,20 @@ func (x *peExe) SectionNames() []string {
 	return names
 }
 
+func (x *peExe) TextRange() (uint64, uint64) {
+	// Assume text is first non-empty section.
+	for _, sect := range x.f.Sections {
+		if sect.VirtualAddress != 0 && sect.Size != 0 {
+			return uint64(sect.VirtualAddress) + x.imageBase(), uint64(sect.VirtualAddress+sect.Size) + x.imageBase()
+		}
+	}
+	return 0, 0
+}
+
+func (x *peExe) RODataRange() (uint64, uint64) {
+	return x.TextRange()
+}
+
 type machoExe struct {
 	os *os.File
 	f  *macho.File
@@ -210,6 +249,18 @@ func (x *machoExe) Close() error {
 }
 
 func (x *machoExe) Entry() uint64 {
+	for _, load := range x.f.Loads {
+		b, ok := load.(macho.LoadBytes)
+		if !ok {
+			continue
+		}
+		bo := x.f.ByteOrder
+		const x86_THREAD_STATE64 = 4
+		cmd, siz := macho.LoadCmd(bo.Uint32(b[0:4])), bo.Uint32(b[4:8])
+		if cmd == macho.LoadCmdUnixThread && siz == 184 && bo.Uint32(b[8:12]) == x86_THREAD_STATE64 {
+			return bo.Uint64(b[144:])
+		}
+	}
 	return 0
 }
 
@@ -248,4 +299,19 @@ func (x *machoExe) SectionNames() []string {
 		names = append(names, sect.Name)
 	}
 	return names
+}
+
+func (x *machoExe) TextRange() (uint64, uint64) {
+	// Assume text is first non-empty segment.
+	for _, load := range x.f.Loads {
+		seg, ok := load.(*macho.Segment)
+		if ok && seg.Name != "__PAGEZERO" && seg.Addr != 0 && seg.Filesz != 0 {
+			return seg.Addr, seg.Addr + seg.Filesz
+		}
+	}
+	return 0, 0
+}
+
+func (x *machoExe) RODataRange() (uint64, uint64) {
+	return x.TextRange()
 }
