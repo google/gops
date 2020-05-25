@@ -228,7 +228,7 @@ func handle(conn io.ReadWriter, msg []byte) error {
 	case signal.Version:
 		fmt.Fprintf(conn, "%v\n", runtime.Version())
 	case signal.HeapProfile:
-		pprof.WriteHeapProfile(conn)
+		return pprof.WriteHeapProfile(conn)
 	case signal.CPUProfile:
 		if err := pprof.StartCPUProfile(conn); err != nil {
 			return err
@@ -254,7 +254,9 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		_, err = bufio.NewReader(f).WriteTo(conn)
 		return err
 	case signal.Trace:
-		trace.Start(conn)
+		if err := trace.Start(conn); err != nil {
+			return err
+		}
 		time.Sleep(5 * time.Second)
 		trace.Stop()
 	case signal.SetGCPercent:
