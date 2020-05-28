@@ -23,7 +23,7 @@ func ConfigDir() (string, error) {
 	}
 
 	if osUserConfigDir := getOSUserConfigDir(); osUserConfigDir != "" {
-		return osUserConfigDir, nil
+		return filepath.Join(osUserConfigDir, "gops"), nil
 	}
 
 	if runtime.GOOS == "windows" {
