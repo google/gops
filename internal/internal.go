@@ -6,12 +6,12 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -54,7 +54,7 @@ func PIDFile(pid int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s/%d", gopsdir, pid), nil
+	return filepath.Join(gopsdir, strconv.Itoa(pid)), nil
 }
 
 func GetPort(pid int) (string, error) {
