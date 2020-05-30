@@ -1,15 +1,39 @@
-# Golang CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-go/ for more details
-version: 2
-jobs:
-  build:
+version: 2.1
+
+orbs:
+  go: circleci/go@0.2.0
+  windows: circleci/windows@2.3.0
+
+executors:
+  golang:
     docker:
-      - image: circleci/golang:1.12
+    - image: circleci/golang:1.12
+
+jobs:
+  test_linux:
+    executor: golang
 
     working_directory: /go/src/github.com/google/gops
     steps:
       - checkout
-
-      # specify any bash command here prefixed with `run: `
       - run: go test -v ./...
+  test_windows:
+    executor: windows/default
+
+    working_directory: /go/src/github.com/google/gops
+    steps:
+      - checkout
+      - run: go test -v ./...
+
+workflows:
+  version: 2
+  gops:
+    jobs:
+    - test_linux:
+        filters:
+          tags:
+            only: /.*/
+    - test_windows:
+        filters:
+          tags:
+            only: /.*/
