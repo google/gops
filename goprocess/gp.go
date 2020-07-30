@@ -35,10 +35,13 @@ func FindAll() []P {
 	var wg sync.WaitGroup
 	wg.Add(len(pss))
 	found := make(chan P)
+	limitCh := make(chan struct{}, 10)
 
 	for _, pr := range pss {
+		limitCh <- struct{}{}
 		pr := pr
 		go func() {
+			defer func() { <-limitCh }()
 			defer wg.Done()
 
 			path, version, agent, ok, err := isGo(pr)
