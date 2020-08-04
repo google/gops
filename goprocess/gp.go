@@ -27,6 +27,7 @@ type P struct {
 
 // FindAll returns all the Go processes currently running on this host.
 func FindAll() []P {
+	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
 	pss, err := ps.Processes()
 	if err != nil {
 		return nil
@@ -35,7 +36,7 @@ func FindAll() []P {
 	var wg sync.WaitGroup
 	wg.Add(len(pss))
 	found := make(chan P)
-	limitCh := make(chan struct{}, 10)
+	limitCh := make(chan struct{}, concurrencyProcesses)
 
 	for _, pr := range pss {
 		limitCh <- struct{}{}
