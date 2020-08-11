@@ -177,7 +177,7 @@ To print the runtime statistics such as number of goroutines and `GOMAXPROCS`.
 ##### Pprof
 
 gops supports CPU and heap pprof profiles. After reading either heap or CPU profile,
-it shells out to the `go tool pprof` and let you interatively examine the profiles.
+it shells out to the `go tool pprof` and let you interactively examine the profiles.
 
 To enter the CPU profile, run:
 
