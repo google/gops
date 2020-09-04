@@ -33,42 +33,50 @@ func FindAll() []P {
 		return nil
 	}
 
+	found := make(chan P)
+	psCh := make(chan ps.Process)
+	go func() {
+		for _, pr := range pss {
+			psCh <- pr
+		}
+		close(psCh)
+	}()
+
 	var wg sync.WaitGroup
 	wg.Add(len(pss))
-	found := make(chan P)
-	limitCh := make(chan struct{}, concurrencyProcesses)
 
-	for _, pr := range pss {
+	for i := 0; i < concurrencyProcesses; i++ {
 		go func() {
-			limitCh <- struct{}{}
+			for pr := range psCh {
+				func(pr ps.Process) {
+					defer func() {
+						wg.Done()
+					}()
+					path, version, agent, ok, err := isGo(pr)
+					if err != nil {
+						// TODO(jbd): Return a list of errors.
+					}
+					if !ok {
+						return
+					}
+					found <- P{
+						PID:          pr.Pid(),
+						PPID:         pr.PPid(),
+						Exec:         pr.Executable(),
+						Path:         path,
+						BuildVersion: version,
+						Agent:        agent,
+					}
+				}(pr)
+			}
 		}()
-		go func(pr ps.Process) {
-			defer func() {
-				wg.Done()
-			}()
-
-			<-limitCh
-			path, version, agent, ok, err := isGo(pr)
-			if err != nil {
-				// TODO(jbd): Return a list of errors.
-			}
-			if !ok {
-				return
-			}
-			found <- P{
-				PID:          pr.Pid(),
-				PPID:         pr.PPid(),
-				Exec:         pr.Executable(),
-				Path:         path,
-				BuildVersion: version,
-				Agent:        agent,
-			}
-		}(pr)
 	}
+
 	go func() {
 		wg.Wait()
 		close(found)
 	}()
+
 	var results []P
 	for p := range found {
 		results = append(results, p)
