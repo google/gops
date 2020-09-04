@@ -39,11 +39,14 @@ func FindAll() []P {
 	limitCh := make(chan struct{}, concurrencyProcesses)
 
 	for _, pr := range pss {
-		limitCh <- struct{}{}
-		pr := pr
 		go func() {
-			defer func() { <-limitCh }()
-			defer wg.Done()
+			limitCh <- struct{}{}
+		}()
+		go func(pr ps.Process) {
+			defer func() {
+				<-limitCh
+				wg.Done()
+			}()
 
 			path, version, agent, ok, err := isGo(pr)
 			if err != nil {
@@ -60,7 +63,7 @@ func FindAll() []P {
 				BuildVersion: version,
 				Agent:        agent,
 			}
-		}()
+		}(pr)
 	}
 	go func() {
 		wg.Wait()
