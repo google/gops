@@ -44,10 +44,10 @@ func FindAll() []P {
 		}()
 		go func(pr ps.Process) {
 			defer func() {
-				<-limitCh
 				wg.Done()
 			}()
 
+			<-limitCh
 			path, version, agent, ok, err := isGo(pr)
 			if err != nil {
 				// TODO(jbd): Return a list of errors.
