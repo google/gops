@@ -25,9 +25,9 @@ type P struct {
 	Agent        bool
 }
 
-type findFunc func(pid int) (p P, ok bool, err error)
+type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
-func findAll(pss []ps.Process, fn findFunc, concurrency int) []P {
+func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 	var wg sync.WaitGroup
 	in := make(chan ps.Process)
 	out := make(chan P)
@@ -37,10 +37,17 @@ func findAll(pss []ps.Process, fn findFunc, concurrency int) []P {
 		go func() {
 			defer wg.Done()
 			for pr := range in {
-				if p, ok, err := fn(pr.Pid()); err != nil {
+				if path, version, agent, ok, err := fn(pr); err != nil {
 					// TODO(jbd): Return a list of errors.
 				} else if ok {
-					out <- p
+					out <- P{
+						PID:          pr.Pid(),
+						PPID:         pr.PPid(),
+						Exec:         pr.Executable(),
+						Path:         path,
+						BuildVersion: version,
+						Agent:        agent,
+					}
 				}
 			}
 		}()
@@ -71,7 +78,7 @@ func FindAll() []P {
 		return nil
 	}
 	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
-	return findAll(pss, Find, concurrencyProcesses)
+	return findAll(pss, isGo, concurrencyProcesses)
 }
 
 // Find finds info about the process identified with the given PID.

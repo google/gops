@@ -15,7 +15,7 @@ func BenchmarkFindAll(b *testing.B) {
 	}
 }
 
-type fixtureFunc func() (pss []ps.Process, want []P, fn findFunc, done func())
+type fixtureFunc func() (pss []ps.Process, want []P, fn checkFunc, done func())
 
 // TestFindAll tests findAll implementation function.
 func TestFindAll(t *testing.T) {
@@ -35,9 +35,9 @@ func TestFindAll(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			pss, want, findFunc, finalizeFixture := test.fixture()
+			pss, want, checkFunc, finalizeFixture := test.fixture()
 			defer finalizeFixture()
-			actual := findAll(pss, findFunc, test.concurrency)
+			actual := findAll(pss, checkFunc, test.concurrency)
 			sort.Slice(actual, func(i, j int) bool { return actual[i].PID < actual[j].PID })
 			if !reflect.DeepEqual(actual, want) {
 				t.Errorf("findAll(concurrency=%v)\ngot  %v\nwant %v",
@@ -48,7 +48,7 @@ func TestFindAll(t *testing.T) {
 }
 
 func fakeProcesses(count int) fixtureFunc {
-	return func() (pss []ps.Process, want []P, fn findFunc, done func()) {
+	return func() (pss []ps.Process, want []P, fn checkFunc, done func()) {
 		var wg sync.WaitGroup
 		wg.Add(count)
 		alive := make(chan struct{})
@@ -68,9 +68,9 @@ func fakeProcesses(count int) fixtureFunc {
 			want = append(want, P{PID: pid})
 		}
 
-		fn = func(pid int) (p P, ok bool, err error) {
-			p.PID = pid
-			return p, true, nil
+		fn = func(pr ps.Process) (path, version string, agent, ok bool, err error) {
+			ok = true
+			return
 		}
 
 		return
@@ -82,4 +82,6 @@ type process struct {
 	pid int
 }
 
-func (p process) Pid() int { return p.pid }
+func (p process) Pid() int           { return p.pid }
+func (p process) PPid() int          { return 0 }
+func (p process) Executable() string { return "" }
