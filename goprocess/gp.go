@@ -25,7 +25,7 @@ type P struct {
 	Agent        bool
 }
 
-type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
+type checkFunc func(pr ps.Process) (path, version string, agent, ok bool, err error)
 
 func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 	var wg sync.WaitGroup
