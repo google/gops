@@ -25,26 +25,15 @@ type P struct {
 	Agent        bool
 }
 
-// FindAll returns all the Go processes currently running on this host.
-func FindAll() []P {
-	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
-	pss, err := ps.Processes()
-	if err != nil {
-		return nil
-	}
+type findFunc func(pid int) (p P, ok bool, err error)
 
+func findAll(pss []ps.Process, fn findFunc, concurrency int) []P {
+	var wg sync.WaitGroup
+	wg.Add(len(pss))
 	found := make(chan P)
+	limitCh := make(chan struct{}, concurrency)
 
 	go func() {
-		var wg sync.WaitGroup
-		wg.Add(len(pss))
-
-		defer func() {
-			wg.Wait()
-			close(found)
-		}()
-
-		limitCh := make(chan struct{}, concurrencyProcesses)
 		for _, pr := range pss {
 			limitCh <- struct{}{}
 			pr := pr
@@ -52,29 +41,33 @@ func FindAll() []P {
 				defer func() { <-limitCh }()
 				defer wg.Done()
 
-				path, version, agent, ok, err := isGo(pr)
-				if err != nil {
+				if p, ok, err := fn(pr.Pid()); err != nil {
 					// TODO(jbd): Return a list of errors.
-				}
-				if !ok {
+				} else if !ok {
 					return
-				}
-				found <- P{
-					PID:          pr.Pid(),
-					PPID:         pr.PPid(),
-					Exec:         pr.Executable(),
-					Path:         path,
-					BuildVersion: version,
-					Agent:        agent,
+				} else {
+					found <- p
 				}
 			}()
 		}
+		wg.Wait()
+		close(found)
 	}()
 	var results []P
 	for p := range found {
 		results = append(results, p)
 	}
 	return results
+}
+
+// FindAll returns all the Go processes currently running on this host.
+func FindAll() []P {
+	pss, err := ps.Processes()
+	if err != nil {
+		return nil
+	}
+	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
+	return findAll(pss, Find, concurrencyProcesses)
 }
 
 // Find finds info about the process identified with the given PID.
