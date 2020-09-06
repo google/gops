@@ -25,22 +25,25 @@ type P struct {
 	Agent        bool
 }
 
-type checkFunc func(pr ps.Process) (path, version string, agent, ok bool, err error)
+type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
 func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 	var wg sync.WaitGroup
-	in := make(chan ps.Process)
-	out := make(chan P)
-	// Create fixed amount of workers.
-	for i := 0; i < concurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for pr := range in {
+	wg.Add(len(pss))
+	found := make(chan P)
+	limitCh := make(chan struct{}, concurrency)
+
+	go func() {
+		for _, pr := range pss {
+			limitCh <- struct{}{}
+			pr := pr
+			go func() {
+				defer func() { <-limitCh }()
+				defer wg.Done()
 				if path, version, agent, ok, err := fn(pr); err != nil {
 					// TODO(jbd): Return a list of errors.
 				} else if ok {
-					out <- P{
+					found <- P{
 						PID:          pr.Pid(),
 						PPID:         pr.PPid(),
 						Exec:         pr.Executable(),
@@ -49,26 +52,16 @@ func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 						Agent:        agent,
 					}
 				}
-			}
-		}()
-	}
-	// Create collector.
-	result := make(chan []P)
-	go func() {
-		var results []P
-		for p := range out {
-			results = append(results, p)
+			}()
 		}
-		result <- results
+		wg.Wait()
+		close(found)
 	}()
-	// Feed processes. There are only so many workers, so we are good.
-	for _, pr := range pss {
-		in <- pr
+	var results []P
+	for p := range found {
+		results = append(results, p)
 	}
-	close(in)
-	wg.Wait() // No more workers (producers). Safe to close the output as well.
-	close(out)
-	return <-result
+	return results
 }
 
 // FindAll returns all the Go processes currently running on this host.
