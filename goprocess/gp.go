@@ -28,11 +28,6 @@ type P struct {
 type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
 func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
-	pss, err := ps.Processes()
-	if err != nil {
-		return nil
-	}
-
 	input := make(chan ps.Process, len(pss))
 	output := make(chan P, len(pss))
 
@@ -51,7 +46,7 @@ func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 			defer wg.Done()
 
 			for pr := range input {
-				path, version, agent, ok, err := isGo(pr)
+				path, version, agent, ok, err := fn(pr)
 				if err != nil {
 					// TODO(jbd): Return a list of errors.
 					continue
