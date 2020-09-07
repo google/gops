@@ -25,6 +25,16 @@ type P struct {
 	Agent        bool
 }
 
+// FindAll returns all the Go processes currently running on this host.
+func FindAll() []P {
+	pss, err := ps.Processes()
+	if err != nil {
+		return nil
+	}
+	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
+	return findAll(pss, isGo, concurrencyProcesses)
+}
+
 type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
 func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
@@ -73,16 +83,6 @@ func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 		results = append(results, p)
 	}
 	return results
-}
-
-// FindAll returns all the Go processes currently running on this host.
-func FindAll() []P {
-	pss, err := ps.Processes()
-	if err != nil {
-		return nil
-	}
-	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
-	return findAll(pss, isGo, concurrencyProcesses)
 }
 
 // Find finds info about the process identified with the given PID.
