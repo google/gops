@@ -27,17 +27,17 @@ type P struct {
 
 // FindAll returns all the Go processes currently running on this host.
 func FindAll() []P {
+	const concurrencyLimit = 10 // max number of concurrent workers
 	pss, err := ps.Processes()
 	if err != nil {
 		return nil
 	}
-	const concurrencyProcesses = 10 // limit the maximum number of concurrent reading process tasks
-	return findAll(pss, isGo, concurrencyProcesses)
+	return findAll(pss, isGo, concurrencyLimit)
 }
 
 type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
-func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
+func findAll(pss []ps.Process, isGoFn checkFunc, concurrency int) []P {
 	input := make(chan ps.Process, len(pss))
 	output := make(chan P, len(pss))
 
@@ -56,7 +56,7 @@ func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
 			defer wg.Done()
 
 			for pr := range input {
-				path, version, agent, ok, err := fn(pr)
+				path, version, agent, ok, err := isGoFn(pr)
 				if err != nil {
 					// TODO(jbd): Return a list of errors.
 					continue
