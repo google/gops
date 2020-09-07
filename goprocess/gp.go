@@ -32,7 +32,13 @@ func FindAll() []P {
 	if err != nil {
 		return nil
 	}
+	return findAll(pss, isGo, concurrencyLimit)
+}
 
+// Allows to inject isGo for testing.
+type isGoFunc func(ps.Process) (path, version string, agent, ok bool, err error)
+
+func findAll(pss []ps.Process, isGo isGoFunc, concurrencyLimit int) []P {
 	input := make(chan ps.Process, len(pss))
 	output := make(chan P, len(pss))
 
