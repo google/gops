@@ -28,37 +28,53 @@ type P struct {
 type checkFunc func(ps.Process) (path, version string, agent, ok bool, err error)
 
 func findAll(pss []ps.Process, fn checkFunc, concurrency int) []P {
-	var wg sync.WaitGroup
-	wg.Add(len(pss))
-	found := make(chan P)
-	limitCh := make(chan struct{}, concurrency)
+	pss, err := ps.Processes()
+	if err != nil {
+		return nil
+	}
 
-	go func() {
-		for _, pr := range pss {
-			limitCh <- struct{}{}
-			pr := pr
-			go func() {
-				defer func() { <-limitCh }()
-				defer wg.Done()
-				if path, version, agent, ok, err := fn(pr); err != nil {
+	input := make(chan ps.Process, len(pss))
+	output := make(chan P, len(pss))
+
+	for _, ps := range pss {
+		input <- ps
+	}
+	close(input)
+
+	var wg sync.WaitGroup
+	wg.Add(concurrency) // used to wait for workers to be finished
+
+	// Run limited amount of of workers until there
+	// is no more processes to be checked in the input channel.
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			defer wg.Done()
+
+			for pr := range input {
+				path, version, agent, ok, err := isGo(pr)
+				if err != nil {
 					// TODO(jbd): Return a list of errors.
-				} else if ok {
-					found <- P{
-						PID:          pr.Pid(),
-						PPID:         pr.PPid(),
-						Exec:         pr.Executable(),
-						Path:         path,
-						BuildVersion: version,
-						Agent:        agent,
-					}
+					continue
 				}
-			}()
-		}
-		wg.Wait()
-		close(found)
-	}()
+				if !ok {
+					continue
+				}
+				output <- P{
+					PID:          pr.Pid(),
+					PPID:         pr.PPid(),
+					Exec:         pr.Executable(),
+					Path:         path,
+					BuildVersion: version,
+					Agent:        agent,
+				}
+			}
+		}()
+	}
+	wg.Wait()     // wait until all workers are finished
+	close(output) // no more results to be waited for
+
 	var results []P
-	for p := range found {
+	for p := range output {
 		results = append(results, p)
 	}
 	return results
