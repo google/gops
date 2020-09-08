@@ -33,13 +33,15 @@ func FindAll() []P {
 		return nil
 	}
 
-	input := make(chan ps.Process, len(pss))
-	output := make(chan P, len(pss))
+	input := make(chan ps.Process)
+	output := make(chan P)
 
-	for _, ps := range pss {
-		input <- ps
-	}
-	close(input)
+	go func() {
+		for _, ps := range pss {
+			input <- ps
+		}
+		close(input)
+	}()
 
 	var wg sync.WaitGroup
 	wg.Add(concurrencyLimit) // used to wait for workers to be finished
@@ -70,8 +72,10 @@ func FindAll() []P {
 			}
 		}()
 	}
-	wg.Wait()     // wait until all workers are finished
-	close(output) // no more results to be waited for
+	go func() {
+		wg.Wait()     // wait until all workers are finished
+		close(output) // no more results to be waited for
+	}()
 
 	var results []P
 	for p := range output {
