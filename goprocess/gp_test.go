@@ -42,11 +42,11 @@ func TestFindAll(t *testing.T) {
 		goPIDs:      []int{1},
 		want:        []P{{PID: 1}},
 	}, {
-		name:        "filters Go process",
+		name:        "filters Go processes",
 		concurrency: 10,
-		input:       processesWithPID(1, 2),
-		goPIDs:      []int{1},
-		want:        []P{{PID: 1}},
+		input:       processesWithPID(1, 2, 3, 4, 5, 6, 7),
+		goPIDs:      []int{1, 3, 5, 7},
+		want:        []P{{PID: 1}, {PID: 3}, {PID: 5}, {PID: 7}},
 	}, {
 		name:           "Go processes above max concurrency (issue #123)",
 		concurrency:    2,
