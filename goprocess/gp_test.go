@@ -14,8 +14,6 @@ func BenchmarkFindAll(b *testing.B) {
 	}
 }
 
-type fixtureFunc func() (pss []ps.Process, want []P, fn isGoFunc, done func())
-
 // TestFindAll tests findAll implementation function.
 func TestFindAll(t *testing.T) {
 	for _, tc := range []struct {
