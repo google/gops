@@ -2,6 +2,7 @@ package goprocess
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/keybase/go-ps"
@@ -54,6 +55,7 @@ func TestFindAll(t *testing.T) {
 	}} {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := findAll(tc.input, fakeIsGo(tc.goPIDs), tc.concurrencyLimit)
+			sort.Slice(actual, func(i, j int) bool { return actual[i].PID < actual[j].PID })
 			if !reflect.DeepEqual(actual, tc.want) {
 				t.Errorf("findAll(concurrency=%v)\ngot  %v\nwant %v",
 					tc.concurrencyLimit, actual, tc.want)
