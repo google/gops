@@ -74,11 +74,12 @@ func fakeIsGo(goPIDs []int) isGoFunc {
 	}
 }
 
-func fakeProcessesWithPIDs(pids ...int) (p []ps.Process) {
+func fakeProcessesWithPIDs(pids ...int) []ps.Process {
+	p := make([]ps.Process, 0, len(pids))
 	for _, pid := range pids {
 		p = append(p, fakeProcess{pid: pid})
 	}
-	return
+	return p
 }
 
 type fakeProcess struct {
