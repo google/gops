@@ -266,7 +266,7 @@ func fmtEtimeDuration(d time.Duration) string {
 	if days > 0 {
 		fmt.Fprintf(&b, "%02d-", days)
 	}
-	if hours/time.Hour > 0 {
+	if days > 0 || hours/time.Hour > 0 {
 		fmt.Fprintf(&b, "%02d:", hours/time.Hour)
 	}
 	fmt.Fprintf(&b, "%02d:", minutes/time.Minute)
