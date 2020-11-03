@@ -262,7 +262,7 @@ func fmtEtimeDuration(d time.Duration) string {
 	hours := d % (24 * time.Hour)
 	minutes := hours % time.Hour
 	seconds := math.Mod(minutes.Seconds(), 60)
-	var b bytes.Buffer
+	var b strings.Builder
 	if days > 0 {
 		fmt.Fprintf(&b, "%02d-", days)
 	}
