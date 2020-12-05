@@ -6,6 +6,7 @@ package agent
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -73,6 +74,30 @@ func TestFormatBytes(t *testing.T) {
 		result := formatBytes(tt.val)
 		if result != tt.want {
 			t.Errorf("formatBytes(%v) = %q; want %q", tt.val, result, tt.want)
+		}
+	}
+}
+
+func TestVerify(t *testing.T) {
+	inputFunc := func(text string) []byte {
+		input := make([]byte, 64)
+		copy(input, []byte(text))
+		return input
+	}
+
+	tests := []struct {
+		input []byte
+		key   string
+		want  bool
+	}{
+		{inputFunc("abc"), "abc", true},
+		{inputFunc("ab"), "abc", false},
+		{[]byte{0x01}, "abc", false},
+		{inputFunc(strings.Repeat("1", 64)), strings.Repeat("1", 64), true},
+	}
+	for _, tt := range tests {
+		if got := verify(tt.input, tt.key); got != tt.want {
+			t.Errorf("verify(%v, %v) = %v; want %v", tt.input, tt.key, got, tt.want)
 		}
 	}
 }

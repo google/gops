@@ -8,6 +8,7 @@ package agent
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -55,6 +56,9 @@ type Options struct {
 	// can call Close before shutting down.
 	// Optional.
 	ShutdownCleanup bool
+
+	// Key is remote access credentials. Maxlength 64 characters
+	Key string
 }
 
 // Listen starts the gops agent on a host process. Once agent started, users
@@ -108,12 +112,18 @@ func Listen(opts Options) error {
 		return err
 	}
 
-	go listen()
+	key := opts.Key
+	if len(key) > 64 {
+		return fmt.Errorf("Key maxlength is 64 characters")
+	}
+
+	go listen(key)
 	return nil
 }
 
-func listen() {
+func listen(key string) {
 	buf := make([]byte, 1)
+	keyBuf := make([]byte, 64)
 	for {
 		fd, err := listener.Accept()
 		if err != nil {
@@ -126,10 +136,28 @@ func listen() {
 			}
 			continue
 		}
+		if key != "" {
+			if _, err := fd.Read(keyBuf); err != nil {
+				fmt.Fprintf(os.Stderr, "gops: %v", err)
+				continue
+			}
+			if !verify(keyBuf, key) {
+				fmt.Fprintf(os.Stderr, "gops: access denied. client: %s\n", fd.RemoteAddr())
+				fd.Write([]byte{0}) // login failed
+				fd.Write([]byte("access denied. Please set right GOPS_KEY\n"))
+				fd.Close()
+				continue
+
+			} else {
+				fd.Write([]byte{1}) // login success
+			}
+		}
+
 		if _, err := fd.Read(buf); err != nil {
 			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
 			continue
 		}
+
 		if err := handle(fd, buf); err != nil {
 			fmt.Fprintf(os.Stderr, "gops: %v\n", err)
 			continue
@@ -181,6 +209,11 @@ func formatBytes(val uint64) string {
 		return fmt.Sprintf("%0.2f%s (%d bytes)", float64(val)/(float64(target)/1024), units[i], val)
 	}
 	return fmt.Sprintf("%d bytes", val)
+}
+
+func verify(input []byte, key string) bool {
+	input = bytes.TrimRight(input, string([]byte{0}))
+	return bytes.Compare(input, []byte(key)) == 0
 }
 
 func handle(conn io.ReadWriter, msg []byte) error {

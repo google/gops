@@ -207,6 +207,22 @@ func cmdLazy(addr net.TCPAddr, c byte, params ...byte) (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
+	key := os.Getenv("GOPS_KEY")
+	if key != "" {
+		keyBuf := make([]byte, 64)
+		restBuf := make([]byte, 1)
+		copy(keyBuf, []byte(key))
+		if _, err := conn.Write(keyBuf); err != nil {
+			return nil, err
+		}
+		if _, err := conn.Read(restBuf); err != nil {
+			return nil, err
+		}
+		if restBuf[0] == 0 { // login failed.
+			return conn, nil
+		}
+	}
+
 	buf := []byte{c}
 	buf = append(buf, params...)
 	if _, err := conn.Write(buf); err != nil {
