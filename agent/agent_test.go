@@ -54,6 +54,17 @@ func TestAgentListenMultipleClose(t *testing.T) {
 	Close()
 }
 
+func TestAgentListenReuseAddrAndPort(t *testing.T) {
+	err := Listen(Options{
+		Addr:                   "127.0.0.1:50000",
+		ReuseSocketAddrAndPort: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	Close()
+}
+
 func TestFormatBytes(t *testing.T) {
 	tests := []struct {
 		val  uint64
