@@ -9,6 +9,6 @@ require (
 	github.com/shirou/gopsutil v2.20.4+incompatible
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/xlab/treeprint v1.0.0
-	golang.org/x/sys v0.0.0-20200515095857-1151b9dac4a9 // indirect
+	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d
 	rsc.io/goversion v1.2.0
 )
