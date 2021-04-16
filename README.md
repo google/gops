@@ -1,5 +1,6 @@
 # gops
 
+[![GitHub Action Status](https://github.com/google/gops/workflows/Tests/badge.svg)](https://github.com/google/gops/actions?query=workflow%3ATests)
 [![Build status](https://circleci.com/gh/google/gops/tree/master.svg?style=shield&circle-token=2637dc1e57d5407ae250480a86a2e553a7d20482)](https://circleci.com/gh/google/gops)
 [![GoDoc](https://godoc.org/github.com/google/gops?status.svg)](https://godoc.org/github.com/google/gops)
 
