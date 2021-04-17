@@ -55,7 +55,11 @@ func main() {
 	// See if it is a PID.
 	pid, err := strconv.Atoi(cmd)
 	if err == nil {
-		processInfo(pid)
+		var interval int
+		if len(os.Args) >= 3 {
+			interval, _ = strconv.Atoi(os.Args[2])
+		}
+		processInfo(pid, interval)
 		return
 	}
 
@@ -127,7 +131,7 @@ func processes() {
 	}
 }
 
-func processInfo(pid int) {
+func processInfo(pid, interval int) {
 	p, err := process.NewProcess(int32(pid))
 	if err != nil {
 		log.Fatalf("Cannot read process info: %v", err)
@@ -142,7 +146,12 @@ func processInfo(pid int) {
 		fmt.Printf("memory usage:\t%.3f%%\n", v)
 	}
 	if v, err := p.CPUPercent(); err == nil {
-		fmt.Printf("cpu usage:\t%.3f%%\n", v)
+		fmt.Printf("cpu usage(all):\t%.3f%%\n", v)
+	}
+	if interval > 0 {
+		if v, err := cpuPercentWithinTime(p, time.Second*time.Duration(interval)); err == nil {
+			fmt.Printf("cpu usage(%ds):\t%.3f%%\n", interval, v)
+		}
 	}
 	if v, err := p.Username(); err == nil {
 		fmt.Printf("username:\t%v\n", v)
@@ -161,6 +170,20 @@ func processInfo(pid int) {
 			}
 		}
 	}
+}
+
+// cpuPercentWithinTime return how many percent of the CPU time this process uses within given time duration
+func cpuPercentWithinTime(p *process.Process, t time.Duration) (float64, error) {
+	cput, err := p.Times()
+	if err != nil {
+		return 0, err
+	}
+	time.Sleep(t)
+	cput2, err := p.Times()
+	if err != nil {
+		return 0, err
+	}
+	return 100 * (cput2.Total() - cput.Total()) / t.Seconds(), nil
 }
 
 // elapsedTime shows the elapsed time of the process indicating how long the
