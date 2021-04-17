@@ -79,21 +79,23 @@ The output displays:
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
-#### $ gops \<pid\>
+#### $ gops \<pid\> [seconds] 
 
 To report more information about a process, run `gops` following by a PID:
+> If set the seconds arg, the percent of the CPU time this process uses within given time duration will be reported.
 
 ```sh
 $ gops <pid>
-parent PID:	5985
-threads:	27
-memory usage:	0.199%
-cpu usage:	0.139%
-username:	jbd
-cmd+args:	/Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice Helper -pid 5985
-local/remote:	127.0.0.1:56765 <-> :0 (LISTEN)
-local/remote:	127.0.0.1:56765 <-> 127.0.0.1:50955 (ESTABLISHED)
-local/remote:	100.76.175.164:52353 <-> 54.241.191.232:443 (ESTABLISHED)
+parent PID:	  5985
+threads:	  27
+memory usage:	  0.199%
+cpu usage(all): 0.139%
+cpu usage(1s):	  19.5% # if seconds provided
+username:	  jbd
+cmd+args:	  /Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice   Helper -pid 5985
+local/remote:	  127.0.0.1:56765 <-> :0 (LISTEN)
+local/remote:	  127.0.0.1:56765 <-> 127.0.0.1:50955 (ESTABLISHED)
+local/remote:	  100.76.175.164:52353 <-> 54.241.191.232:443 (ESTABLISHED)
 ```
 
 #### $ gops tree
