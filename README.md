@@ -89,7 +89,7 @@ $ gops <pid>
 parent PID:	  5985
 threads:	  27
 memory usage:	  0.199%
-cpu usage(total): 0.139%
+cpu usage(all): 0.139%
 cpu usage(1s):	  19.5% # if seconds provided
 username:	  jbd
 cmd+args:	  /Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice   Helper -pid 5985
