@@ -55,11 +55,15 @@ func main() {
 	// See if it is a PID.
 	pid, err := strconv.Atoi(cmd)
 	if err == nil {
-		var interval int
+		var period time.Duration
 		if len(os.Args) >= 3 {
-			interval, _ = strconv.Atoi(os.Args[2])
+			period, err = time.ParseDuration(os.Args[2])
+			if err != nil {
+				secs, _ := strconv.Atoi(os.Args[2])
+				period = time.Duration(secs) * time.Second
+			}
 		}
-		processInfo(pid, interval)
+		processInfo(pid, period)
 		return
 	}
 
@@ -131,7 +135,7 @@ func processes() {
 	}
 }
 
-func processInfo(pid, interval int) {
+func processInfo(pid int, period time.Duration) {
 	p, err := process.NewProcess(int32(pid))
 	if err != nil {
 		log.Fatalf("Cannot read process info: %v", err)
@@ -148,9 +152,9 @@ func processInfo(pid, interval int) {
 	if v, err := p.CPUPercent(); err == nil {
 		fmt.Printf("cpu usage:\t%.3f%%\n", v)
 	}
-	if interval > 0 {
-		if v, err := cpuPercentWithinTime(p, time.Second*time.Duration(interval)); err == nil {
-			fmt.Printf("cpu usage (%ds):\t%.3f%%\n", interval, v)
+	if period > 0 {
+		if v, err := cpuPercentWithinTime(p, period); err == nil {
+			fmt.Printf("cpu usage (%v):\t%.3f%%\n", period, v)
 		}
 	}
 	if v, err := p.Username(); err == nil {

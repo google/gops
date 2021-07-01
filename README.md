@@ -79,7 +79,7 @@ The output displays:
 
 Note that processes running the agent are marked with `*` next to the PID (e.g. `4132*`).
 
-#### $ gops \<pid\>
+#### $ gops \<pid\> [duration]
 
 To report more information about a process, run `gops` followed by a PID:
 
@@ -89,6 +89,24 @@ parent PID:	5985
 threads:	27
 memory usage:	0.199%
 cpu usage:	0.139%
+username:	jbd
+cmd+args:	/Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice Helper -pid 5985
+local/remote:	127.0.0.1:56765 <-> :0 (LISTEN)
+local/remote:	127.0.0.1:56765 <-> 127.0.0.1:50955 (ESTABLISHED)
+local/remote:	100.76.175.164:52353 <-> 54.241.191.232:443 (ESTABLISHED)
+```
+
+If an optional duration is specified in the format as expected by
+[`time.ParseDuration`](https://golang.org/pkg/time/#ParseDuration), the CPU
+usage for the given time period is reported in addition:
+
+```sh
+$ gops <pid> 2s
+parent PID:	5985
+threads:	27
+memory usage:	0.199%
+cpu usage:	0.139%
+cpu usage (2s):	0.271%
 username:	jbd
 cmd+args:	/Applications/Splice.app/Contents/Resources/Splice Helper.app/Contents/MacOS/Splice Helper -pid 5985
 local/remote:	127.0.0.1:56765 <-> :0 (LISTEN)
@@ -199,4 +217,3 @@ gops allows you to start the runtime tracer for 5 seconds and examine the result
 ```sh
 $ gops trace (<pid>|<addr>)
 ```
-
