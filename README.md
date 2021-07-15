@@ -16,8 +16,22 @@ $ gops
 
 ## Installation
 
+To install the latest version of gops:
+
 ```sh
-$ go get -u github.com/google/gops
+$ go get github.com/google/gops
+```
+
+or
+
+```sh
+$ go install github.com/google/gops@latest
+```
+
+To install a specific gops version, for example v0.3.19:
+
+```sh
+$ go install github.com/google/gops@v0.3.19
 ```
 
 ## Diagnostics
