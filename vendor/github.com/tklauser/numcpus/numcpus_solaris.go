@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build solaris
 // +build solaris
 
 package numcpus
@@ -24,6 +25,11 @@ const (
 	_SC_NPROCESSORS_ONLN = 15
 	_SC_NPROCESSORS_MAX  = 516
 )
+
+func getConfigured() (int, error) {
+	n, err := unix.Sysconf(_SC_NPROCESSORS_CONF)
+	return int(n), err
+}
 
 func getKernelMax() (int, error) {
 	n, err := unix.Sysconf(_SC_NPROCESSORS_MAX)
