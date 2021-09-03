@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build darwin || dragonfly || freebsd || netbsd || openbsd
 // +build darwin dragonfly freebsd netbsd openbsd
 
 package numcpus
@@ -21,6 +22,11 @@ import (
 
 	"golang.org/x/sys/unix"
 )
+
+func getConfigured() (int, error) {
+	n, err := unix.SysctlUint32("hw.ncpu")
+	return int(n), err
+}
 
 func getKernelMax() (int, error) {
 	return 0, ErrNotSupported
@@ -36,7 +42,7 @@ func getOnline() (int, error) {
 	switch runtime.GOOS {
 	case "netbsd", "openbsd":
 		n, err = unix.SysctlUint32("hw.ncpuonline")
-		if err != nil || n < 0 {
+		if err != nil {
 			n, err = unix.SysctlUint32("hw.ncpu")
 		}
 	default:
