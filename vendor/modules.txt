@@ -1,12 +1,12 @@
 # github.com/StackExchange/wmi v1.2.1
 github.com/StackExchange/wmi
-# github.com/go-ole/go-ole v1.2.5
+# github.com/go-ole/go-ole v1.2.6-0.20210915003542-8b1f7f90f6b1
 github.com/go-ole/go-ole
 github.com/go-ole/go-ole/oleutil
 # github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19
 github.com/keybase/go-ps
 github.com/keybase/go-ps/darwincgo
-# github.com/shirou/gopsutil/v3 v3.21.8
+# github.com/shirou/gopsutil/v3 v3.21.9
 github.com/shirou/gopsutil/v3/cpu
 github.com/shirou/gopsutil/v3/internal/common
 github.com/shirou/gopsutil/v3/mem
