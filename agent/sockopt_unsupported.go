@@ -9,6 +9,6 @@ package agent
 
 import "syscall"
 
-func setsockoptReuseAddrAndPort(network, address string, c syscall.RawConn) error {
+func setReuseAddrAndPortSockopts(network, address string, c syscall.RawConn) error {
 	return nil
 }
