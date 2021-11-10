@@ -137,7 +137,7 @@ func processes() {
 
 func processInfo(pid int, period time.Duration) {
 	if period < 0 {
-		log.Fatalf("Cannot process with negative duration: %v", period)
+		log.Fatalf("Cannot determine CPU usage for negative duration %v", period)
 	}
 	p, err := process.NewProcess(int32(pid))
 	if err != nil {
