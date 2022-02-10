@@ -36,7 +36,7 @@ $ go install github.com/google/gops@v0.3.19
 
 ## Diagnostics
 
-For processes that starts the diagnostics agent, gops can report
+For processes that start the diagnostics agent, gops can report
 additional information such as the current stack trace, Go version, memory
 stats, etc.
 
