@@ -182,7 +182,7 @@ $ gops memstats (<pid>|<addr>)
 If you want to force run garbage collection on the target program, run `gc`.
 It will block until the GC is completed.
 
-#### $gops setgc (\<pid\>|\<addr\>) <perc>
+#### $ gops setgc (\<pid\>|\<addr\>) <perc>
 
 Sets the garbage collection target to a certain percentage.
 The following command sets it to 10%:
