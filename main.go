@@ -35,7 +35,7 @@ Commands:
   memstats   Prints the allocation and garbage collection stats.
   version    Prints the Go version used to build the program.
   stats      Prints runtime stats.
-  trace      Runs the runtime tracer for 5 secs and launches "go tool trace".
+  trace      Runs the runtime tracer and launches "go tool trace".
   pprof-heap Reads the heap profile and launches "go tool pprof".
   pprof-cpu  Reads the CPU profile and launches "go tool pprof".
 

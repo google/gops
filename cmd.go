@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
@@ -71,9 +72,25 @@ func pprofCPU(addr net.TCPAddr, _ []string) error {
 	return pprof(addr, signal.CPUProfile, "cpu")
 }
 
-func trace(addr net.TCPAddr, _ []string) error {
-	fmt.Println("Tracing now, will take 5 secs...")
-	out, err := cmd(addr, signal.Trace)
+func trace(addr net.TCPAddr, params []string) error {
+	// keep the original duration of 5 seconds by default
+	duration := 5 * time.Second
+	buf := make([]byte, binary.MaxVarintLen64)
+
+	if len(params) > 0 {
+		d, err := time.ParseDuration(params[0])
+		if err != nil {
+			return fmt.Errorf("failed to parse duration: %v", params[0])
+		}
+		if d <= 0 {
+			return fmt.Errorf("duration has to be positive: %v", d)
+		}
+		duration = d
+		binary.PutVarint(buf, int64(duration))
+	}
+
+	fmt.Printf("Tracing now, will take %v...\n", duration)
+	out, err := cmd(addr, signal.Trace, buf...)
 	if err != nil {
 		return err
 	}
