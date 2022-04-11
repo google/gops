@@ -93,6 +93,9 @@ func Find(pid int) (p P, ok bool, err error) {
 		return P{}, false, err
 	}
 	path, version, agent, ok, err := isGo(pr)
+	if err != nil {
+		return P{}, ok, err
+	}
 	if !ok {
 		return P{}, false, nil
 	}
