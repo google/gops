@@ -9,8 +9,6 @@ import (
 	"os"
 	"sync"
 
-	goversion "rsc.io/goversion/version"
-
 	"github.com/google/gops/internal"
 	ps "github.com/keybase/go-ps"
 )
@@ -119,13 +117,11 @@ func isGo(pr ps.Process) (path, version string, agent, ok bool, err error) {
 	if err != nil {
 		return
 	}
-	var versionInfo goversion.Version
-	versionInfo, err = goversion.ReadExe(path)
+	version, err = goVersion(path)
 	if err != nil {
 		return
 	}
 	ok = true
-	version = versionInfo.Release
 	pidfile, err := internal.PIDFile(pr.Pid())
 	if err == nil {
 		_, err := os.Stat(pidfile)
