@@ -12,8 +12,8 @@ jobs:
   test:
     strategy:
       matrix:
-        # Minimum supported version (1.12) and the latest few versions
-        go-version: [1.12, 1.15, 1.16, 1.17]
+        # Minimum supported version (1.12) and the latest two
+        go-version: [1.12, 1.17, 1.18]
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
 
@@ -27,11 +27,11 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Check formatting
-      if: matrix.go-version == '1.17' && matrix.platform == 'ubuntu-latest'
+      if: matrix.go-version == '1.18' && matrix.platform == 'ubuntu-latest'
       run: diff -u <(echo -n) <(go fmt $(go list ./...))
 
     - name: Check module vendoring
-      if: matrix.go-version == '1.17' && matrix.platform == 'ubuntu-latest'
+      if: matrix.go-version == '1.18' && matrix.platform == 'ubuntu-latest'
       run: |
         go mod tidy
         go mod vendor
