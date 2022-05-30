@@ -1,6 +1,6 @@
 module github.com/google/gops
 
-go 1.12
+go 1.13
 
 require (
 	github.com/go-ole/go-ole v1.2.6-0.20210915003542-8b1f7f90f6b1 // indirect
