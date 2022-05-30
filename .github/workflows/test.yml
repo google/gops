@@ -12,8 +12,8 @@ jobs:
   test:
     strategy:
       matrix:
-        # Minimum supported version (1.12) and the latest two
-        go-version: [1.12, 1.17, 1.18]
+        # Minimum supported version (1.13) and the latest two
+        go-version: [1.13, 1.17, 1.18]
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
 
