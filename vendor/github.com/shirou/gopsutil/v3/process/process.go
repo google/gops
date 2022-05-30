@@ -7,7 +7,6 @@ import (
 	"runtime"
 	"sort"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -20,6 +19,7 @@ var (
 	invoke                 common.Invoker = common.Invoke{}
 	ErrorNoChildren                       = errors.New("process does not have children")
 	ErrorProcessNotRunning                = errors.New("process does not exist")
+	ErrorNotPermitted                     = errors.New("operation not permitted")
 )
 
 type Process struct {
@@ -45,13 +45,30 @@ type Process struct {
 
 // Process status
 const (
+	// Running marks a task a running or runnable (on the run queue)
 	Running = "running"
-	Sleep   = "sleep"
-	Stop    = "stop"
-	Idle    = "idle"
-	Zombie  = "zombie"
-	Wait    = "wait"
-	Lock    = "lock"
+	// Blocked marks a task waiting on a short, uninterruptible operation (usually I/O)
+	Blocked = "blocked"
+	// Idle marks a task sleeping for more than about 20 seconds
+	Idle = "idle"
+	// Lock marks a task waiting to acquire a lock
+	Lock = "lock"
+	// Sleep marks task waiting for short, interruptible operation
+	Sleep = "sleep"
+	// Stop marks a stopped process
+	Stop = "stop"
+	// Wait marks an idle interrupt thread (or paging in pre 2.6.xx Linux)
+	Wait = "wait"
+	// Zombie marks a defunct process, terminated but not reaped by its parent
+	Zombie = "zombie"
+
+	// Solaris states. See https://github.com/collectd/collectd/blob/1da3305c10c8ff9a63081284cf3d4bb0f6daffd8/src/processes.c#L2115
+	Daemon   = "daemon"
+	Detached = "detached"
+	System   = "system"
+	Orphan   = "orphan"
+
+	UnknownState = ""
 )
 
 type OpenFilesStat struct {
@@ -213,7 +230,7 @@ func (p *Process) BackgroundWithContext(ctx context.Context) (bool, error) {
 }
 
 // If interval is 0, return difference from last call(non-blocking).
-// If interval > 0, wait interval sec and return diffrence between start and end.
+// If interval > 0, wait interval sec and return difference between start and end.
 func (p *Process) Percent(interval time.Duration) (float64, error) {
 	return p.PercentWithContext(context.Background(), interval)
 }
@@ -264,7 +281,7 @@ func (p *Process) IsRunningWithContext(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	p2, err := NewProcessWithContext(ctx, p.Pid)
-	if err == ErrorProcessNotRunning {
+	if errors.Is(err, ErrorProcessNotRunning) {
 		return false, nil
 	}
 	createTime2, err := p2.CreateTimeWithContext(ctx)
@@ -383,6 +400,15 @@ func (p *Process) Cwd() (string, error) {
 // Parent returns parent Process of the process.
 func (p *Process) Parent() (*Process, error) {
 	return p.ParentWithContext(context.Background())
+}
+
+// ParentWithContext returns parent Process of the process.
+func (p *Process) ParentWithContext(ctx context.Context) (*Process, error) {
+	ppid, err := p.PpidWithContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return NewProcessWithContext(ctx, ppid)
 }
 
 // Status returns the process status.
@@ -520,7 +546,7 @@ func (p *Process) Tgid() (int32, error) {
 }
 
 // SendSignal sends a unix.Signal to the process.
-func (p *Process) SendSignal(sig syscall.Signal) error {
+func (p *Process) SendSignal(sig Signal) error {
 	return p.SendSignalWithContext(context.Background(), sig)
 }
 
@@ -554,23 +580,41 @@ func (p *Process) Environ() ([]string, error) {
 	return p.EnvironWithContext(context.Background())
 }
 
+// convertStatusChar as reported by the ps command across different platforms.
 func convertStatusChar(letter string) string {
+	// Sources
+	// Darwin: http://www.mywebuniversity.com/Man_Pages/Darwin/man_ps.html
+	// FreeBSD: https://www.freebsd.org/cgi/man.cgi?ps
+	// Linux https://man7.org/linux/man-pages/man1/ps.1.html
+	// OpenBSD: https://man.openbsd.org/ps.1#state
+	// Solaris: https://github.com/collectd/collectd/blob/1da3305c10c8ff9a63081284cf3d4bb0f6daffd8/src/processes.c#L2115
 	switch letter {
+	case "A":
+		return Daemon
+	case "D", "U":
+		return Blocked
+	case "E":
+		return Detached
+	case "I":
+		return Idle
+	case "L":
+		return Lock
+	case "O":
+		return Orphan
 	case "R":
 		return Running
 	case "S":
 		return Sleep
-	case "T":
+	case "T", "t":
+		// "t" is used by Linux to signal stopped by the debugger during tracing
 		return Stop
-	case "I":
-		return Idle
-	case "Z":
-		return Zombie
 	case "W":
 		return Wait
-	case "L":
-		return Lock
+	case "Y":
+		return System
+	case "Z":
+		return Zombie
 	default:
-		return ""
+		return UnknownState
 	}
 }

@@ -22,7 +22,6 @@ type IOCountersStat struct {
 	Dropout     uint64 `json:"dropout"`     // total number of outgoing packets which were dropped (always 0 on OSX and BSD)
 	Fifoin      uint64 `json:"fifoin"`      // total number of FIFO buffers errors while receiving
 	Fifoout     uint64 `json:"fifoout"`     // total number of FIFO buffers errors while sending
-
 }
 
 // Addr is implemented compatibility to psutil
@@ -131,7 +130,7 @@ func (l *ConntrackStatList) Append(c *ConntrackStat) {
 }
 
 func (l *ConntrackStatList) Items() []ConntrackStat {
-	items := make([]ConntrackStat, len(l.items), len(l.items))
+	items := make([]ConntrackStat, len(l.items))
 	for i, el := range l.items {
 		items[i] = *el
 	}

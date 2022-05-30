@@ -1,4 +1,5 @@
-// +build !darwin,!linux,!freebsd,!openbsd,!solaris,!windows
+//go:build !darwin && !linux && !freebsd && !openbsd && !solaris && !windows && !plan9 && !aix
+// +build !darwin,!linux,!freebsd,!openbsd,!solaris,!windows,!plan9,!aix
 
 package mem
 
