@@ -27,8 +27,7 @@ type MemoryMapsStat struct {
 	Swap         uint64 `json:"swap"`
 }
 
-type MemoryInfoExStat struct {
-}
+type MemoryInfoExStat struct{}
 
 func pidsWithContext(ctx context.Context) ([]int32, error) {
 	return readPidsFromDir(common.HostProc())
@@ -87,10 +86,6 @@ func (p *Process) createTimeWithContext(ctx context.Context) (int64, error) {
 
 func (p *Process) CwdWithContext(ctx context.Context) (string, error) {
 	return p.fillFromPathCwdWithContext(ctx)
-}
-
-func (p *Process) ParentWithContext(ctx context.Context) (*Process, error) {
-	return nil, common.ErrNotImplementedError
 }
 
 func (p *Process) StatusWithContext(ctx context.Context) ([]string, error) {
