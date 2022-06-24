@@ -41,6 +41,14 @@ func ConfigDir() (string, error) {
 	return filepath.Join(homeDir, ".config", "gops"), nil
 }
 
+func getOSUserConfigDir() string {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return ""
+	}
+	return configDir
+}
+
 func guessUnixHomeDir() string {
 	usr, err := user.Current()
 	if err == nil {
