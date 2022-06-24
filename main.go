@@ -12,6 +12,7 @@ import (
 	"math"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -202,13 +203,13 @@ func elapsedTime(p *process.Process) (string, error) {
 	return fmtEtimeDuration(etime), nil
 }
 
-// pstree contains a mapping between the PPIDs and the child processes.
-var pstree map[int][]goprocess.P
-
 // displayProcessTree displays a tree of all the running Go processes.
 func displayProcessTree() {
 	ps := goprocess.FindAll()
-	pstree = make(map[int][]goprocess.P)
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].PPID < ps[j].PPID
+	})
+	pstree := make(map[int][]goprocess.P, len(ps))
 	for _, p := range ps {
 		pstree[p.PPID] = append(pstree[p.PPID], p)
 	}
@@ -216,13 +217,13 @@ func displayProcessTree() {
 	tree.SetValue("...")
 	seen := map[int]bool{}
 	for _, p := range ps {
-		constructProcessTree(p.PPID, p, seen, tree)
+		constructProcessTree(p.PPID, p, pstree, seen, tree)
 	}
-	fmt.Println(tree.String())
+	fmt.Print(tree.String())
 }
 
 // constructProcessTree constructs the process tree in a depth-first fashion.
-func constructProcessTree(ppid int, process goprocess.P, seen map[int]bool, tree treeprint.Tree) {
+func constructProcessTree(ppid int, process goprocess.P, pstree map[int][]goprocess.P, seen map[int]bool, tree treeprint.Tree) {
 	if seen[ppid] {
 		return
 	}
@@ -239,7 +240,7 @@ func constructProcessTree(ppid int, process goprocess.P, seen map[int]bool, tree
 	}
 	for index := range pstree[ppid] {
 		process := pstree[ppid][index]
-		constructProcessTree(process.PID, process, seen, tree)
+		constructProcessTree(process.PID, process, pstree, seen, tree)
 	}
 }
 
