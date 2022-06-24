@@ -22,8 +22,8 @@ func ConfigDir() (string, error) {
 		return configDir, nil
 	}
 
-	if osUserConfigDir := getOSUserConfigDir(); osUserConfigDir != "" {
-		return filepath.Join(osUserConfigDir, "gops"), nil
+	if userConfigDir, err := os.UserConfigDir(); err == nil {
+		return filepath.Join(userConfigDir, "gops"), nil
 	}
 
 	if runtime.GOOS == "windows" {
@@ -39,14 +39,6 @@ func ConfigDir() (string, error) {
 		return "", errors.New("unable to get current user home directory: os/user lookup failed; $HOME is empty")
 	}
 	return filepath.Join(homeDir, ".config", "gops"), nil
-}
-
-func getOSUserConfigDir() string {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return ""
-	}
-	return configDir
 }
 
 func guessUnixHomeDir() string {
