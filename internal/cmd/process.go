@@ -8,11 +8,43 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/process"
+	"github.com/spf13/cobra"
 )
+
+// ProcessCommand displays information about a Go process.
+func ProcessCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:     "process",
+		Aliases: []string{"pid", "proc"},
+		Short:   "Prints information about a Go process.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ProcessInfo(args)
+			return nil
+		},
+	}
+}
+
+// ProcessInfo takes arguments starting with pid|:addr and grabs all kinds of
+// useful Go process information.
+func ProcessInfo(args []string) {
+	pid, err := strconv.Atoi(args[0])
+
+	var period time.Duration
+	if len(args) >= 2 {
+		period, err = time.ParseDuration(args[1])
+		if err != nil {
+			secs, _ := strconv.Atoi(args[1])
+			period = time.Duration(secs) * time.Second
+		}
+	}
+
+	processInfo(pid, period)
+}
 
 func processInfo(pid int, period time.Duration) {
 	if period < 0 {

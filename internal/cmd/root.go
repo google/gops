@@ -11,87 +11,23 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/gops/goprocess"
+	"github.com/spf13/cobra"
 )
 
-const helpText = `gops is a tool to list and diagnose Go processes.
-
-Usage:
-  gops <cmd> <pid|addr> ...
+// NewRoot command.
+func NewRoot() *cobra.Command {
+	return &cobra.Command{
+		Use:   "gops",
+		Short: "gops is a tool to list and diagnose Go processes.",
+		Example: `  gops <cmd> <pid|addr> ...
   gops <pid> # displays process info
-  gops help  # displays this help message
-
-Commands:
-  stack      Prints the stack trace.
-  gc         Runs the garbage collector and blocks until successful.
-  setgc	     Sets the garbage collection target percentage.
-  memstats   Prints the allocation and garbage collection stats.
-  version    Prints the Go version used to build the program.
-  stats      Prints runtime stats.
-  trace      Runs the runtime tracer for 5 secs and launches "go tool trace".
-  pprof-heap Reads the heap profile and launches "go tool pprof".
-  pprof-cpu  Reads the CPU profile and launches "go tool pprof".
-
-All commands require the agent running on the Go process.
-"*" indicates the process is running the agent.`
-
-// TODO(jbd): add link that explains the use of agent.
-
-// Execute the root command.
-func Execute() {
-	if len(os.Args) < 2 {
-		processes()
-		return
-	}
-
-	cmd := os.Args[1]
-
-	// See if it is a PID.
-	pid, err := strconv.Atoi(cmd)
-	if err == nil {
-		var period time.Duration
-		if len(os.Args) >= 3 {
-			period, err = time.ParseDuration(os.Args[2])
-			if err != nil {
-				secs, _ := strconv.Atoi(os.Args[2])
-				period = time.Duration(secs) * time.Second
-			}
-		}
-		processInfo(pid, period)
-		return
-	}
-
-	if cmd == "help" {
-		usage("")
-	}
-
-	if cmd == "tree" {
-		displayProcessTree()
-		return
-	}
-
-	fn, ok := cmds[cmd]
-	if !ok {
-		usage("unknown subcommand")
-	}
-	if len(os.Args) < 3 {
-		usage("Missing PID or address.")
-		os.Exit(1)
-	}
-	addr, err := targetToAddr(os.Args[2])
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't resolve addr or pid %v to TCPAddress: %v\n", os.Args[2], err)
-		os.Exit(1)
-	}
-	var params []string
-	if len(os.Args) > 3 {
-		params = append(params, os.Args[3:]...)
-	}
-	if err := fn(*addr, params); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+  gops help  # displays this help message`,
+		// TODO(jbd): add link that explains the use of agent.
+		Run: func(cmd *cobra.Command, args []string) {
+			processes()
+		},
 	}
 }
 
@@ -142,18 +78,6 @@ func shortenVersion(v string) string {
 		return v
 	}
 	return results[0]
-}
-
-func usage(msg string) {
-	// default exit code for the statement
-	exitCode := 0
-	if msg != "" {
-		// founded an unexpected command
-		fmt.Printf("gops: %v\n", msg)
-		exitCode = 1
-	}
-	fmt.Fprintf(os.Stderr, "%v\n", helpText)
-	os.Exit(exitCode)
 }
 
 func pad(s string, total int) string {

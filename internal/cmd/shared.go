@@ -18,18 +18,109 @@ import (
 
 	"github.com/google/gops/internal"
 	"github.com/google/gops/signal"
+	"github.com/spf13/cobra"
 )
 
-var cmds = map[string](func(addr net.TCPAddr, params []string) error){
-	"stack":      stackTrace,
-	"gc":         gc,
-	"memstats":   memStats,
-	"version":    version,
-	"pprof-heap": pprofHeap,
-	"pprof-cpu":  pprofCPU,
-	"stats":      stats,
-	"trace":      trace,
-	"setgc":      setGC,
+// AgentCommands is a bridge between the legacy multiplexing to commands, and
+// full migration to Cobra for each command.
+//
+// The code is already nicely structured with one function per command so it
+// seemed cleaner to combine them all together here and "generate" cobra
+// commands as just thin wrappers, rather through individual constructors.
+func AgentCommands() []*cobra.Command {
+	var res []*cobra.Command
+
+	var cmds = []legacyCommand{
+		{
+			name:  "stack",
+			short: "Prints the stack trace.",
+			fn:    stackTrace,
+		},
+		{
+			name:  "gc",
+			short: "Runs the garbage collector and blocks until successful.",
+			fn:    gc,
+		},
+		{
+			name:  "setgc",
+			short: "Sets the garbage collection target percentage.",
+			fn:    setGC,
+		},
+		{
+			name:  "memstats",
+			short: "Prints the allocation and garbage collection stats.",
+			fn:    memStats,
+		},
+		{
+			name:  "stats",
+			short: "Prints runtime stats.",
+			fn:    stats,
+		},
+		{
+			name:  "trace",
+			short: "Runs the runtime tracer for 5 secs and launches \"go tool trace\".",
+			fn:    trace,
+		},
+		{
+			name:  "pprof-heap",
+			short: "Reads the heap profile and launches \"go tool pprof\".",
+			fn:    pprofHeap,
+		},
+		{
+			name:  "pprof-cpu",
+			short: "Reads the CPU profile and launches \"go tool pprof\".",
+			fn:    pprofCPU,
+		},
+		{
+			name:  "version",
+			short: "Prints the Go version used to build the program.",
+			fn:    version,
+		},
+	}
+
+	for _, c := range cmds {
+		c := c
+		res = append(res, &cobra.Command{
+			Use:   fmt.Sprintf("%s <pid|addr>", c.name),
+			Short: c.short,
+
+			RunE: func(cmd *cobra.Command, args []string) error {
+				if len(args) < 1 {
+					return fmt.Errorf("missing PID or address")
+				}
+
+				addr, err := targetToAddr(args[0])
+				if err != nil {
+					return fmt.Errorf(
+						"couldn't resolve addr or pid %v to TCPAddress: %v\n", args[0], err,
+					)
+				}
+
+				var params []string
+				if len(args) > 1 {
+					params = append(params, args[1:]...)
+				}
+
+				if err := c.fn(*addr, params); err != nil {
+					return err
+				}
+
+				return nil
+			},
+
+			// errors get double printed otherwise
+			SilenceUsage:  true,
+			SilenceErrors: true,
+		})
+	}
+
+	return res
+}
+
+type legacyCommand struct {
+	name  string
+	short string
+	fn    func(addr net.TCPAddr, params []string) error
 }
 
 func setGC(addr net.TCPAddr, params []string) error {
