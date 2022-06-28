@@ -1,6 +1,8 @@
 # github.com/go-ole/go-ole v1.2.6
 github.com/go-ole/go-ole
 github.com/go-ole/go-ole/oleutil
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
 # github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19
 github.com/keybase/go-ps
 github.com/keybase/go-ps/darwincgo
@@ -14,6 +16,10 @@ github.com/shirou/gopsutil/v3/internal/common
 github.com/shirou/gopsutil/v3/mem
 github.com/shirou/gopsutil/v3/net
 github.com/shirou/gopsutil/v3/process
+# github.com/spf13/cobra v1.4.0
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.5
+github.com/spf13/pflag
 # github.com/tklauser/go-sysconf v0.3.10
 github.com/tklauser/go-sysconf
 # github.com/tklauser/numcpus v0.4.0
