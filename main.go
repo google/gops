@@ -6,9 +6,34 @@
 package main
 
 import (
+	"log"
+	"os"
+	"strconv"
+
 	"github.com/google/gops/internal/cmd"
 )
 
 func main() {
-	cmd.Execute()
+	var root = cmd.NewRoot()
+	root.AddCommand(cmd.ProcessCommand())
+	root.AddCommand(cmd.TreeCommand())
+	root.AddCommand(cmd.AgentCommands()...)
+
+	// Legacy support for `gops <pid>` command.
+	//
+	// When the second argument is provided as int as opposed to a sub-command
+	// (like proc, version, etc), gops command effectively shortcuts that
+	// to `gops process <pid>`.
+	if len(os.Args) > 1 {
+		// See second argument appears to be a pid rather than a subcommand
+		_, err := strconv.Atoi(os.Args[1])
+		if err == nil {
+			cmd.ProcessInfo(os.Args[1:]) // shift off the command name
+			return
+		}
+	}
+
+	if err := root.Execute(); err != nil {
+		log.Fatal(err)
+	}
 }

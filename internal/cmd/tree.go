@@ -10,8 +10,20 @@ import (
 	"strconv"
 
 	"github.com/google/gops/goprocess"
+	"github.com/spf13/cobra"
 	"github.com/xlab/treeprint"
 )
+
+// TreeCommand displays a process tree.
+func TreeCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "tree",
+		Short: "Display parent-child tree for Go processes.",
+		Run: func(cmd *cobra.Command, args []string) {
+			displayProcessTree()
+		},
+	}
+}
 
 // displayProcessTree displays a tree of all the running Go processes.
 func displayProcessTree() {
