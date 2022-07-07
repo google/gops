@@ -156,8 +156,10 @@ func processInfo(pid int, period time.Duration) {
 	if v, err := p.CPUPercent(); err == nil {
 		fmt.Printf("cpu usage:\t%.3f%%\n", v)
 	}
-	if v, err := cpuPercentWithinTime(p, period); err == nil {
-		fmt.Printf("cpu usage (%v):\t%.3f%%\n", period, v)
+	if period > 0 {
+		if v, err := cpuPercentWithinTime(p, period); err == nil {
+			fmt.Printf("cpu usage (%v):\t%.3f%%\n", period, v)
+		}
 	}
 	if v, err := p.Username(); err == nil {
 		fmt.Printf("username:\t%v\n", v)
