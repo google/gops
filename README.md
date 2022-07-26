@@ -225,8 +225,10 @@ $ gops pprof-heap (<pid>|<addr>)
 
 ##### Execution trace
 
-gops allows you to start the runtime tracer for 5 seconds and examine the results.
+gops allows you to start the runtime tracer for a specified duration and
+examine the results.
 
 ```sh
-$ gops trace (<pid>|<addr>)
+$ gops trace (<pid>|<addr>) 90s
+Tracing now, will take 1m30s...
 ```

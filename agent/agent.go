@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -269,10 +270,24 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		_, err = bufio.NewReader(f).WriteTo(conn)
 		return err
 	case signal.Trace:
+		intd, err := binary.ReadVarint(bufio.NewReader(conn))
+		if err != nil {
+			return err
+		}
+		d := time.Duration(intd)
+		if intd < 0 {
+			return errors.New("invalid duration")
+		}
+		if intd == 0 {
+			// also default to 5 seconds if the client didn't send any duration to
+			// keep compatibility between older clients contacting a newer server.
+			d = 5 * time.Second
+		}
+
 		if err := trace.Start(conn); err != nil {
 			return err
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(d)
 		trace.Stop()
 	case signal.SetGCPercent:
 		perc, err := binary.ReadVarint(bufio.NewReader(conn))
