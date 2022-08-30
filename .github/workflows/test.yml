@@ -24,7 +24,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Check formatting
       if: matrix.go-version == '1.18' && matrix.platform == 'ubuntu-latest'
