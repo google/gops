@@ -10,7 +10,7 @@ github.com/keybase/go-ps/darwincgo
 github.com/lufia/plan9stats
 # github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c
 github.com/power-devops/perfstat
-# github.com/shirou/gopsutil/v3 v3.22.7
+# github.com/shirou/gopsutil/v3 v3.22.8
 github.com/shirou/gopsutil/v3/cpu
 github.com/shirou/gopsutil/v3/internal/common
 github.com/shirou/gopsutil/v3/mem
