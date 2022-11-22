@@ -30,12 +30,5 @@ jobs:
       if: matrix.go-version == '1.19' && matrix.platform == 'ubuntu-latest'
       run: diff -u <(echo -n) <(go fmt $(go list ./...))
 
-    - name: Check module vendoring
-      if: matrix.go-version == '1.19' && matrix.platform == 'ubuntu-latest'
-      run: |
-        go mod tidy
-        go mod vendor
-        git diff --exit-code || exit 1
-
     - name: Run unit tests
       run: go test -race -v ./...
