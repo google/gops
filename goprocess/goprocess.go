@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/google/gops/internal"
-	ps "github.com/keybase/go-ps"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // P represents a Go process.
@@ -26,7 +26,7 @@ type P struct {
 // FindAll returns all the Go processes currently running on this host.
 func FindAll() []P {
 	const concurrencyLimit = 10 // max number of concurrent workers
-	pss, err := ps.Processes()
+	pss, err := process.Processes()
 	if err != nil {
 		return nil
 	}
@@ -34,10 +34,10 @@ func FindAll() []P {
 }
 
 // Allows to inject isGo for testing.
-type isGoFunc func(ps.Process) (path, version string, agent, ok bool, err error)
+type isGoFunc func(*process.Process) (path, version string, agent, ok bool, err error)
 
-func findAll(pss []ps.Process, isGo isGoFunc, concurrencyLimit int) []P {
-	input := make(chan ps.Process, len(pss))
+func findAll(pss []*process.Process, isGo isGoFunc, concurrencyLimit int) []P {
+	input := make(chan *process.Process, len(pss))
 	output := make(chan P, len(pss))
 
 	for _, ps := range pss {
@@ -63,10 +63,19 @@ func findAll(pss []ps.Process, isGo isGoFunc, concurrencyLimit int) []P {
 				if !ok {
 					continue
 				}
+				ppid, err := pr.Ppid()
+				if err != nil {
+					continue
+				}
+				name, err := pr.Name()
+				if err != nil {
+					continue
+				}
+
 				output <- P{
-					PID:          pr.Pid(),
-					PPID:         pr.PPid(),
-					Exec:         pr.Executable(),
+					PID:          int(pr.Pid),
+					PPID:         int(ppid),
+					Exec:         name,
 					Path:         path,
 					BuildVersion: version,
 					Agent:        agent,
@@ -86,18 +95,26 @@ func findAll(pss []ps.Process, isGo isGoFunc, concurrencyLimit int) []P {
 
 // Find finds info about the process identified with the given PID.
 func Find(pid int) (p P, ok bool, err error) {
-	pr, err := ps.FindProcess(pid)
+	pr, err := process.NewProcess(int32(pid))
 	if err != nil {
 		return P{}, false, err
 	}
 	path, version, agent, ok, err := isGo(pr)
-	if !ok {
+	if !ok || err != nil {
 		return P{}, false, nil
 	}
+	ppid, err := pr.Ppid()
+	if err != nil {
+		return P{}, false, err
+	}
+	name, err := pr.Name()
+	if err != nil {
+		return P{}, false, err
+	}
 	return P{
-		PID:          pr.Pid(),
-		PPID:         pr.PPid(),
-		Exec:         pr.Executable(),
+		PID:          int(pr.Pid),
+		PPID:         int(ppid),
+		Exec:         name,
 		Path:         path,
 		BuildVersion: version,
 		Agent:        agent,
@@ -108,12 +125,12 @@ func Find(pid int) (p P, ok bool, err error) {
 // in the process' binary and determines if the process
 // if a Go process or not. If the process is a Go process,
 // it reports PID, binary name and full path of the binary.
-func isGo(pr ps.Process) (path, version string, agent, ok bool, err error) {
-	if pr.Pid() == 0 {
+func isGo(pr *process.Process) (path, version string, agent, ok bool, err error) {
+	if pr.Pid == 0 {
 		// ignore system process
 		return
 	}
-	path, err = pr.Path()
+	path, err = pr.Exe()
 	if err != nil {
 		return
 	}
@@ -122,7 +139,7 @@ func isGo(pr ps.Process) (path, version string, agent, ok bool, err error) {
 		return
 	}
 	ok = true
-	pidfile, err := internal.PIDFile(pr.Pid())
+	pidfile, err := internal.PIDFile(int(pr.Pid))
 	if err == nil {
 		_, err := os.Stat(pidfile)
 		agent = err == nil
