@@ -22,13 +22,13 @@ func BenchmarkFindAll(b *testing.B) {
 // TestFindAll tests findAll implementation function.
 func TestFindAll(t *testing.T) {
 	testProcess, err := process.NewProcess(int32(os.Getpid()))
+	if err != nil {
+		t.Errorf("failed to get current process: %v", err)
+	}
 	testPpid, _ := testProcess.Ppid()
 	testExec, _ := testProcess.Name()
 	wantProcess := P{PID: int(testProcess.Pid), PPID: int(testPpid), Exec: testExec}
 
-	if err != nil {
-		t.Errorf("failed to get current process: %v", err)
-	}
 	for _, tc := range []struct {
 		name             string
 		concurrencyLimit int
