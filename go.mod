@@ -3,7 +3,7 @@ module github.com/google/gops
 go 1.17
 
 require (
-	github.com/shirou/gopsutil/v3 v3.22.11
+	github.com/shirou/gopsutil/v3 v3.22.12
 	github.com/spf13/cobra v1.6.1
 	github.com/xlab/treeprint v1.1.0
 	golang.org/x/sys v0.3.0
