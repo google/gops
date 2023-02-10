@@ -1,7 +1,6 @@
 package goprocess
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -72,17 +71,17 @@ func TestFindAll(t *testing.T) {
 				if runtime.GOOS != "linux" {
 					t.Skip()
 				}
-				tempDir, err := ioutil.TempDir("", "")
+				tempDir, err := os.MkdirTemp("", "")
 				if err != nil {
 					t.Errorf("failed to create temp dir: %v", err)
 				}
 				defer os.RemoveAll(tempDir)
 				for _, p := range tc.input {
 					os.Mkdir(filepath.Join(tempDir, strconv.Itoa(int(p.Pid))), 0o755)
-					ioutil.WriteFile(filepath.Join(tempDir, strconv.Itoa(int(p.Pid)), "stat"), []byte(
+					os.WriteFile(filepath.Join(tempDir, strconv.Itoa(int(p.Pid)), "stat"), []byte(
 						`1440024 () R 0 1440024 0 34821 1440024 4194304 134 0 0 0 0 0 0 0 20 0 1 0 95120609 6746112 274 18446744073709551615 94467689938944 94467690036601 140724224197808 0 0 0 0 0 0 0 0 0 17 11 0 0 0 0 0 94467690068048 94467690071296 94467715629056 140724224199226 140724224199259 140724224199259 140724224204780 0`,
 					), 0o644)
-					ioutil.WriteFile(filepath.Join(tempDir, strconv.Itoa(int(p.Pid)), "status"), []byte(
+					os.WriteFile(filepath.Join(tempDir, strconv.Itoa(int(p.Pid)), "status"), []byte(
 						`Name:
 Umask:  0022
 State:  R (running)

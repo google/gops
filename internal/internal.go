@@ -6,7 +6,6 @@ package internal
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -53,7 +52,7 @@ func GetPort(pid int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b, err := ioutil.ReadFile(portfile)
+	b, err := os.ReadFile(portfile)
 	if err != nil {
 		return "", err
 	}
