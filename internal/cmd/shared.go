@@ -43,7 +43,7 @@ func AgentCommands() []*cobra.Command {
 		},
 		{
 			name:  "setgc",
-			short: "Sets the garbage collection target percentage.",
+			short: "Sets the garbage collection target percentage. To completely stop GC, set to 'off'",
 			fn:    setGC,
 		},
 		{
@@ -127,9 +127,17 @@ func setGC(addr net.TCPAddr, params []string) error {
 	if len(params) != 1 {
 		return errors.New("missing gc percentage")
 	}
-	perc, err := strconv.ParseInt(params[0], 10, strconv.IntSize)
-	if err != nil {
-		return err
+	var (
+		perc int64
+		err  error
+	)
+	if strings.ToLower(params[0]) == "off" {
+		perc = -1
+	} else {
+		perc, err = strconv.ParseInt(params[0], 10, strconv.IntSize)
+		if err != nil {
+			return err
+		}
 	}
 	buf := make([]byte, binary.MaxVarintLen64)
 	binary.PutVarint(buf, perc)

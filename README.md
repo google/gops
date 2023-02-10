@@ -189,6 +189,11 @@ The following command sets it to 10%:
 ``` sh
 $ gops setgc (<pid>|<addr>) 10
 ```
+The following command turns off the garbage collector:
+
+```sh
+$ gops setgc (<pid>|<addr>) off
+```
 
 #### $ gops version (\<pid\>|\<addr\>)
 
