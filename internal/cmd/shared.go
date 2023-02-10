@@ -129,7 +129,7 @@ func setGC(addr net.TCPAddr, params []string) error {
 	}
 	var (
 		perc int64
-		err error
+		err  error
 	)
 	if strings.ToLower(params[0]) == "off" {
 		perc = -1
