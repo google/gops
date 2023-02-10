@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -179,11 +178,11 @@ func trace(addr net.TCPAddr, _ []string) error {
 	if len(out) == 0 {
 		return errors.New("nothing has traced")
 	}
-	tmpfile, err := ioutil.TempFile("", "trace")
+	tmpfile, err := os.CreateTemp("", "trace")
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(tmpfile.Name(), out, 0); err != nil {
+	if err := os.WriteFile(tmpfile.Name(), out, 0); err != nil {
 		return err
 	}
 	fmt.Printf("Trace dump saved to: %s\n", tmpfile.Name())
@@ -201,7 +200,7 @@ func trace(addr net.TCPAddr, _ []string) error {
 }
 
 func pprof(addr net.TCPAddr, p byte, prefix string) error {
-	tmpDumpFile, err := ioutil.TempFile("", prefix+"_profile")
+	tmpDumpFile, err := os.CreateTemp("", prefix+"_profile")
 	if err != nil {
 		return err
 	}
@@ -213,7 +212,7 @@ func pprof(addr net.TCPAddr, p byte, prefix string) error {
 		if len(out) == 0 {
 			return errors.New("failed to read the profile")
 		}
-		if err := ioutil.WriteFile(tmpDumpFile.Name(), out, 0); err != nil {
+		if err := os.WriteFile(tmpDumpFile.Name(), out, 0); err != nil {
 			return err
 		}
 		fmt.Printf("Profile dump saved to: %s\n", tmpDumpFile.Name())
@@ -224,7 +223,7 @@ func pprof(addr net.TCPAddr, p byte, prefix string) error {
 		defer os.Remove(tmpDumpFile.Name())
 	}
 	// Download running binary
-	tmpBinFile, err := ioutil.TempFile("", "binary")
+	tmpBinFile, err := os.CreateTemp("", "binary")
 	if err != nil {
 		return err
 	}
@@ -237,7 +236,7 @@ func pprof(addr net.TCPAddr, p byte, prefix string) error {
 			return errors.New("failed to read the binary")
 		}
 		defer os.Remove(tmpBinFile.Name())
-		if err := ioutil.WriteFile(tmpBinFile.Name(), out, 0); err != nil {
+		if err := os.WriteFile(tmpBinFile.Name(), out, 0); err != nil {
 			return err
 		}
 	}
@@ -294,7 +293,7 @@ func cmd(addr net.TCPAddr, c byte, params ...byte) ([]byte, error) {
 		return nil, fmt.Errorf("couldn't get port by PID: %v", err)
 	}
 
-	all, err := ioutil.ReadAll(conn)
+	all, err := io.ReadAll(conn)
 	if err != nil {
 		return nil, err
 	}
