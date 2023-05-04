@@ -6,7 +6,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.4
 	github.com/spf13/cobra v1.7.0
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/sys v0.7.0
+	golang.org/x/sys v0.8.0
 	rsc.io/goversion v1.2.0
 )
 
