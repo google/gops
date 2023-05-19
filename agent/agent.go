@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -145,12 +146,18 @@ func saveConfig(opts Options, port int) (err error) {
 	}
 
 	err = os.MkdirAll(gopsdir, os.ModePerm)
+	if errors.Is(err, syscall.EROFS) || errors.Is(err, syscall.EPERM) { // ignore and work in remote mode only
+		return nil
+	}
 	if err != nil {
 		return err
 	}
 
 	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
 	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
+	if errors.Is(err, syscall.EROFS) || errors.Is(err, syscall.EPERM) { // ignore and work in remote mode only
+		return nil
+	}
 	if err != nil {
 		return err
 	}
