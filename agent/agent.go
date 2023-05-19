@@ -94,24 +94,9 @@ func Listen(opts Options) (err error) {
 	if err != nil {
 		return err
 	}
+
 	port := listener.Addr().(*net.TCPAddr).Port
-
-	gopsdir := opts.ConfigDir
-	if gopsdir == "" {
-		cfgDir, err := internal.ConfigDir()
-		if err != nil {
-			return err
-		}
-		gopsdir = cfgDir
-	}
-
-	err = os.MkdirAll(gopsdir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-
-	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
-	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
+	err = saveConfig(opts, port)
 	if err != nil {
 		return err
 	}
@@ -147,6 +132,30 @@ func listen(l net.Listener) {
 		}
 		fd.Close()
 	}
+}
+
+func saveConfig(opts Options, port int) (err error) {
+	gopsdir := opts.ConfigDir
+	if gopsdir == "" {
+		cfgDir, err := internal.ConfigDir()
+		if err != nil {
+			return err
+		}
+		gopsdir = cfgDir
+	}
+
+	err = os.MkdirAll(gopsdir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
+	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func gracefulShutdown() {
