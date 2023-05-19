@@ -74,30 +74,12 @@ type Options struct {
 // Note: The agent exposes an endpoint via a TCP connection that can be used by
 // any program on the system. Review your security requirements before starting
 // the agent.
-func Listen(opts Options) error {
+func Listen(opts Options) (err error) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	if portfile != "" {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
-	}
-
-	// new
-	gopsdir := opts.ConfigDir
-	if gopsdir == "" {
-		cfgDir, err := internal.ConfigDir()
-		if err != nil {
-			return err
-		}
-		gopsdir = cfgDir
-	}
-
-	err := os.MkdirAll(gopsdir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	if opts.ShutdownCleanup {
-		gracefulShutdown()
 	}
 
 	addr := opts.Addr
@@ -113,12 +95,30 @@ func Listen(opts Options) error {
 		return err
 	}
 	port := listener.Addr().(*net.TCPAddr).Port
+
+	gopsdir := opts.ConfigDir
+	if gopsdir == "" {
+		cfgDir, err := internal.ConfigDir()
+		if err != nil {
+			return err
+		}
+		gopsdir = cfgDir
+	}
+
+	err = os.MkdirAll(gopsdir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
 	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
+	if opts.ShutdownCleanup {
+		gracefulShutdown()
+	}
 	go listen(listener)
 	return nil
 }
