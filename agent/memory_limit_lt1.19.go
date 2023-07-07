@@ -14,7 +14,7 @@ import (
 
 func setMemoryLimit(limit int64) (int64, error) {
 	if limit < 0 {
-		return math.MaxInt64
+		return math.MaxInt64, nil
 	}
 	return 0, errors.New("memory limit not supported on Go versions before 1.19")
 }
