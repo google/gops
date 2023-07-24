@@ -19,31 +19,38 @@ import (
 // ProcessCommand displays information about a Go process.
 func ProcessCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:     "process",
+		Use:     "process <pid> [period]",
 		Aliases: []string{"pid", "proc"},
 		Short:   "Prints information about a Go process.",
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ProcessInfo(args)
-			return nil
+			return ProcessInfo(args)
 		},
 	}
 }
 
 // ProcessInfo takes arguments starting with pid|:addr and grabs all kinds of
 // useful Go process information.
-func ProcessInfo(args []string) {
+func ProcessInfo(args []string) error {
 	pid, err := strconv.Atoi(args[0])
+	if err != nil {
+		return fmt.Errorf("error parsing the first argument: %w", err)
+	}
 
 	var period time.Duration
 	if len(args) >= 2 {
 		period, err = time.ParseDuration(args[1])
 		if err != nil {
-			secs, _ := strconv.Atoi(args[1])
+			secs, err := strconv.Atoi(args[1])
+			if err != nil {
+				return fmt.Errorf("error parsing the second argument: %w", err)
+			}
 			period = time.Duration(secs) * time.Second
 		}
 	}
 
 	processInfo(pid, period)
+	return nil
 }
 
 func processInfo(pid int, period time.Duration) {
