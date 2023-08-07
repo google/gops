@@ -3,10 +3,10 @@ module github.com/google/gops
 go 1.17
 
 require (
-	github.com/shirou/gopsutil/v3 v3.23.5
+	github.com/shirou/gopsutil/v3 v3.23.7
 	github.com/spf13/cobra v1.7.0
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/sys v0.9.0
+	golang.org/x/sys v0.10.0
 	rsc.io/goversion v1.2.0
 )
 
