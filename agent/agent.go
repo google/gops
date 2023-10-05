@@ -75,7 +75,7 @@ type Options struct {
 // Note: The agent exposes an endpoint via a TCP connection that can be used by
 // any program on the system. Review your security requirements before starting
 // the agent.
-func Listen(opts Options) (err error) {
+func Listen(opts Options) error {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -87,10 +87,13 @@ func Listen(opts Options) (err error) {
 	if addr == "" {
 		addr = defaultAddr
 	}
+
 	var lc net.ListenConfig
 	if opts.ReuseSocketAddrAndPort {
 		lc.Control = setReuseAddrAndPortSockopts
 	}
+
+	var err error
 	listener, err = lc.Listen(context.Background(), "tcp", addr)
 	if err != nil {
 		return err
@@ -135,7 +138,7 @@ func listen(l net.Listener) {
 	}
 }
 
-func saveConfig(opts Options, port int) (err error) {
+func saveConfig(opts Options, port int) error {
 	gopsdir := opts.ConfigDir
 	if gopsdir == "" {
 		cfgDir, err := internal.ConfigDir()
@@ -145,7 +148,7 @@ func saveConfig(opts Options, port int) (err error) {
 		gopsdir = cfgDir
 	}
 
-	err = os.MkdirAll(gopsdir, os.ModePerm)
+	err := os.MkdirAll(gopsdir, os.ModePerm)
 	if errors.Is(err, syscall.EROFS) || errors.Is(err, syscall.EPERM) { // ignore and work in remote mode only
 		return nil
 	}
