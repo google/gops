@@ -102,7 +102,10 @@ func Listen(opts Options) error {
 	port := listener.Addr().(*net.TCPAddr).Port
 	err = saveConfig(opts, port)
 	if err != nil {
-		return err
+		// ignore and work in remote mode only
+		if !errors.Is(err, syscall.EROFS) && !errors.Is(err, syscall.EPERM) {
+			return err
+		}
 	}
 
 	if opts.ShutdownCleanup {
@@ -149,23 +152,12 @@ func saveConfig(opts Options, port int) error {
 	}
 
 	err := os.MkdirAll(gopsdir, os.ModePerm)
-	if errors.Is(err, syscall.EROFS) || errors.Is(err, syscall.EPERM) { // ignore and work in remote mode only
-		return nil
-	}
 	if err != nil {
 		return err
 	}
 
 	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
-	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
-	if errors.Is(err, syscall.EROFS) || errors.Is(err, syscall.EPERM) { // ignore and work in remote mode only
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
 }
 
 func gracefulShutdown() {
