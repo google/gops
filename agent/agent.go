@@ -79,7 +79,7 @@ func Listen(opts Options) (err error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if portfile != "" {
+	if listener != nil {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
 	}
 
@@ -192,6 +192,7 @@ func Close() {
 	}
 	if listener != nil {
 		listener.Close()
+		listener = nil
 	}
 }
 
