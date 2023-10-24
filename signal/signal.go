@@ -35,4 +35,7 @@ const (
 
 	// SetGCPercent sets the garbage collection target percentage.
 	SetGCPercent = byte(0x10)
+
+	// StackTraceLegacy represents a command to print stack trace in a legacy format (but it includes labels).
+	StackTraceLegacy = byte(0x11)
 )
