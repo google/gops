@@ -10,6 +10,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -78,47 +79,38 @@ func Listen(opts Options) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if portfile != "" {
+	if listener != nil {
 		return fmt.Errorf("gops: agent already listening at: %v", listener.Addr())
-	}
-
-	// new
-	gopsdir := opts.ConfigDir
-	if gopsdir == "" {
-		cfgDir, err := internal.ConfigDir()
-		if err != nil {
-			return err
-		}
-		gopsdir = cfgDir
-	}
-
-	err := os.MkdirAll(gopsdir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	if opts.ShutdownCleanup {
-		gracefulShutdown()
 	}
 
 	addr := opts.Addr
 	if addr == "" {
 		addr = defaultAddr
 	}
+
 	var lc net.ListenConfig
 	if opts.ReuseSocketAddrAndPort {
 		lc.Control = setReuseAddrAndPortSockopts
 	}
+
+	var err error
 	listener, err = lc.Listen(context.Background(), "tcp", addr)
 	if err != nil {
 		return err
 	}
+
 	port := listener.Addr().(*net.TCPAddr).Port
-	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
-	err = os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
+	err = saveConfig(opts, port)
 	if err != nil {
-		return err
+		// ignore and work in remote mode only
+		if !errors.Is(err, syscall.EROFS) && !errors.Is(err, syscall.EPERM) {
+			return err
+		}
 	}
 
+	if opts.ShutdownCleanup {
+		gracefulShutdown()
+	}
 	go listen(listener)
 	return nil
 }
@@ -149,6 +141,25 @@ func listen(l net.Listener) {
 	}
 }
 
+func saveConfig(opts Options, port int) error {
+	gopsdir := opts.ConfigDir
+	if gopsdir == "" {
+		cfgDir, err := internal.ConfigDir()
+		if err != nil {
+			return err
+		}
+		gopsdir = cfgDir
+	}
+
+	err := os.MkdirAll(gopsdir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	portfile = filepath.Join(gopsdir, strconv.Itoa(os.Getpid()))
+	return os.WriteFile(portfile, []byte(strconv.Itoa(port)), os.ModePerm)
+}
+
 func gracefulShutdown() {
 	c := make(chan os.Signal, 1)
 	gosignal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -176,6 +187,7 @@ func Close() {
 	}
 	if listener != nil {
 		listener.Close()
+		listener = nil
 	}
 }
 

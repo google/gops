@@ -94,7 +94,7 @@ func findAll(pss []*process.Process, isGo isGoFunc, concurrencyLimit int) []P {
 }
 
 // Find finds info about the process identified with the given PID.
-func Find(pid int) (p P, ok bool, err error) {
+func Find(pid int) (P, bool, error) {
 	pr, err := process.NewProcess(int32(pid))
 	if err != nil {
 		return P{}, false, err
