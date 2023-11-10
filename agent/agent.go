@@ -207,6 +207,14 @@ func formatBytes(val uint64) string {
 }
 
 func handle(conn io.ReadWriter, msg []byte) error {
+	reader := bufio.NewReader(conn)
+	magic, err := binary.ReadVarint(reader)
+	if err != nil {
+		return err
+	}
+	if magic != internal.MAGIC {
+		return fmt.Errorf("gops: invalid magic number: %v", magic)
+	}
 	switch msg[0] {
 	case signal.StackTrace:
 		return pprof.Lookup("goroutine").WriteTo(conn, 2)
@@ -286,7 +294,7 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		time.Sleep(5 * time.Second)
 		trace.Stop()
 	case signal.SetGCPercent:
-		perc, err := binary.ReadVarint(bufio.NewReader(conn))
+		perc, err := binary.ReadVarint(reader)
 		if err != nil {
 			return err
 		}
