@@ -233,6 +233,7 @@ func handle(conn io.ReadWriter, msg []byte) error {
 		fmt.Fprintf(conn, "mspan-sys: %v\n", formatBytes(s.MSpanSys))
 		fmt.Fprintf(conn, "mcache-in-use: %v\n", formatBytes(s.MCacheInuse))
 		fmt.Fprintf(conn, "mcache-sys: %v\n", formatBytes(s.MCacheSys))
+		fmt.Fprintf(conn, "buck-hash-sys: %v\n", formatBytes(s.BuckHashSys))
 		fmt.Fprintf(conn, "other-sys: %v\n", formatBytes(s.OtherSys))
 		fmt.Fprintf(conn, "gc-sys: %v\n", formatBytes(s.GCSys))
 		fmt.Fprintf(conn, "next-gc: when heap-alloc >= %v\n", formatBytes(s.NextGC))
