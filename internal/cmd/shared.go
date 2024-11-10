@@ -36,6 +36,11 @@ func AgentCommands() []*cobra.Command {
 			fn:    stackTrace,
 		},
 		{
+			name:  "stack-legacy",
+			short: "Prints the stack trace in legacy mode but with labels.",
+			fn:    stackTraceLegacy,
+		},
+		{
 			name:  "gc",
 			short: "Runs the garbage collector and blocks until successful.",
 			fn:    gc,
@@ -145,6 +150,10 @@ func setGC(addr net.TCPAddr, params []string) error {
 
 func stackTrace(addr net.TCPAddr, _ []string) error {
 	return cmdWithPrint(addr, signal.StackTrace)
+}
+
+func stackTraceLegacy(addr net.TCPAddr, _ []string) error {
+	return cmdWithPrint(addr, signal.StackTraceLegacy)
 }
 
 func gc(addr net.TCPAddr, _ []string) error {
