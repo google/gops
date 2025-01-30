@@ -206,6 +206,8 @@ func formatBytes(val uint64) string {
 
 func handle(conn io.ReadWriter, msg []byte) error {
 	switch msg[0] {
+	case signal.StackTraceLegacy:
+		return pprof.Lookup("goroutine").WriteTo(conn, 1)
 	case signal.StackTrace:
 		return pprof.Lookup("goroutine").WriteTo(conn, 2)
 	case signal.GC:
