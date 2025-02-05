@@ -306,6 +306,9 @@ func cmdLazy(addr net.TCPAddr, c byte, params ...byte) (io.Reader, error) {
 		return nil, err
 	}
 	buf := []byte{c}
+	magic := make([]byte, binary.MaxVarintLen64)
+	binary.PutVarint(magic, internal.MAGIC)
+	buf = append(buf, magic...)
 	buf = append(buf, params...)
 	if _, err := conn.Write(buf); err != nil {
 		return nil, err
