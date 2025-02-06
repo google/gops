@@ -290,6 +290,17 @@ func handle(conn io.ReadWriter, msg []byte) error {
 			return err
 		}
 		fmt.Fprintf(conn, "New GC percent set to %v. Previous value was %v.\n", perc, debug.SetGCPercent(int(perc)))
+	case signal.SetMemLimit:
+		limit, err := binary.ReadVarint(bufio.NewReader(conn))
+		if err != nil {
+			return err
+		}
+		previous, err := setMemoryLimit(limit)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(conn, "New memory limit set to %v. Previous value was %v.\n",
+			formatBytes(uint64(limit)), formatBytes(uint64(previous)))
 	}
 	return nil
 }

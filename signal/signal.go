@@ -35,4 +35,7 @@ const (
 
 	// SetGCPercent sets the garbage collection target percentage.
 	SetGCPercent = byte(0x10)
+
+	// SetMemLimit sets the memory limit. (Go 1.19+)
+	SetMemLimit = byte(0x11)
 )
