@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"os"
 	"os/exec"
@@ -44,6 +45,11 @@ func AgentCommands() []*cobra.Command {
 			name:  "setgc",
 			short: "Sets the garbage collection target percentage. To completely stop GC, set to 'off'",
 			fn:    setGC,
+		},
+		{
+			name:  "setmemlimit",
+			short: "Sets the memory limit for the process. To disable the limit, set to 'off'",
+			fn:    setMemoryLimit,
 		},
 		{
 			name:  "memstats",
@@ -141,6 +147,27 @@ func setGC(addr net.TCPAddr, params []string) error {
 	buf := make([]byte, binary.MaxVarintLen64)
 	binary.PutVarint(buf, perc)
 	return cmdWithPrint(addr, signal.SetGCPercent, buf...)
+}
+
+func setMemoryLimit(addr net.TCPAddr, params []string) error {
+	if len(params) != 1 {
+		return errors.New("missing memory limit")
+	}
+	var (
+		limit int64
+		err   error
+	)
+	if strings.ToLower(params[0]) == "off" {
+		limit = math.MaxInt64
+	} else {
+		limit, err = strconv.ParseInt(params[0], 10, strconv.IntSize)
+		if err != nil {
+			return err
+		}
+	}
+	buf := make([]byte, binary.MaxVarintLen64)
+	binary.PutVarint(buf, limit)
+	return cmdWithPrint(addr, signal.SetMemLimit, buf...)
 }
 
 func stackTrace(addr net.TCPAddr, _ []string) error {
