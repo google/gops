@@ -1,12 +1,12 @@
 module github.com/google/gops
 
-go 1.18
+go 1.25.0
 
 require (
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/cobra v1.9.1
 	github.com/xlab/treeprint v1.2.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.43.0
 	rsc.io/goversion v1.2.0
 )
 
