@@ -35,4 +35,7 @@ const (
 
 	// SetGCPercent sets the garbage collection target percentage.
 	SetGCPercent = byte(0x10)
+
+	// StackTraceDebug1 represents a command to print stack trace with debug=1 (includes pprof labels).
+	StackTraceDebug1 = byte(0x11)
 )

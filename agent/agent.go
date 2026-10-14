@@ -208,6 +208,8 @@ func handle(conn io.ReadWriter, msg []byte) error {
 	switch msg[0] {
 	case signal.StackTrace:
 		return pprof.Lookup("goroutine").WriteTo(conn, 2)
+	case signal.StackTraceDebug1:
+		return pprof.Lookup("goroutine").WriteTo(conn, 1)
 	case signal.GC:
 		runtime.GC()
 		_, err := conn.Write([]byte("ok"))
