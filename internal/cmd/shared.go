@@ -26,14 +26,20 @@ import (
 // The code is already nicely structured with one function per command so it
 // seemed cleaner to combine them all together here and "generate" cobra
 // commands as just thin wrappers, rather through individual constructors.
+var res []*cobra.Command
+
+var debugLevel int
+
 func AgentCommands() []*cobra.Command {
-	var res []*cobra.Command
 
 	var cmds = []legacyCommand{
 		{
 			name:  "stack",
 			short: "Prints the stack trace.",
 			fn:    stackTrace,
+			setup: func(cmd *cobra.Command) {
+				cmd.Flags().IntVarP(&debugLevel, "debug", "d", 2, "debug level (1 or 2)")
+			},
 		},
 		{
 			name:  "gc",
@@ -79,7 +85,7 @@ func AgentCommands() []*cobra.Command {
 
 	for _, c := range cmds {
 		c := c
-		res = append(res, &cobra.Command{
+		cmd := &cobra.Command{
 			Use:   fmt.Sprintf("%s <pid|addr>", c.name),
 			Short: c.short,
 
@@ -110,7 +116,11 @@ func AgentCommands() []*cobra.Command {
 			// errors get double printed otherwise
 			SilenceUsage:  true,
 			SilenceErrors: true,
-		})
+		}
+		if c.setup != nil {
+			c.setup(cmd)
+		}
+		res = append(res, cmd)
 	}
 
 	return res
@@ -120,6 +130,7 @@ type legacyCommand struct {
 	name  string
 	short string
 	fn    func(addr net.TCPAddr, params []string) error
+	setup func(cmd *cobra.Command)
 }
 
 func setGC(addr net.TCPAddr, params []string) error {
@@ -144,7 +155,11 @@ func setGC(addr net.TCPAddr, params []string) error {
 }
 
 func stackTrace(addr net.TCPAddr, _ []string) error {
-	return cmdWithPrint(addr, signal.StackTrace)
+	sig := signal.StackTrace
+	if debugLevel == 1 {
+		sig = signal.StackTraceDebug1
+	}
+	return cmdWithPrint(addr, sig)
 }
 
 func gc(addr net.TCPAddr, _ []string) error {

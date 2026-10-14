@@ -5,8 +5,12 @@
 package agent
 
 import (
+	"io"
+	"net"
 	"os"
 	"testing"
+
+	"github.com/google/gops/signal"
 )
 
 func TestListen(t *testing.T) {
@@ -85,5 +89,31 @@ func TestFormatBytes(t *testing.T) {
 		if result != tt.want {
 			t.Errorf("formatBytes(%v) = %q; want %q", tt.val, result, tt.want)
 		}
+	}
+}
+
+func TestStackTraceDebug1(t *testing.T) {
+	err := Listen(Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer Close()
+
+	conn, err := net.Dial("tcp", listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	if _, err := conn.Write([]byte{signal.StackTraceDebug1}); err != nil {
+		t.Fatal(err)
+	}
+
+	buf, err := io.ReadAll(conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buf) == 0 {
+		t.Fatal("expected non-empty stack trace for debug=1")
 	}
 }
