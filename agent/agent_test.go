@@ -65,6 +65,42 @@ func TestAgentListenReuseAddrAndPort(t *testing.T) {
 	Close()
 }
 
+func TestAgentAddrAndPort(t *testing.T) {
+	if Addr() != nil {
+		t.Fatalf("Addr() = %v; want nil before Listen", Addr())
+	}
+	if _, err := Port(); err == nil {
+		t.Fatal("Port() expected error before Listen, got nil")
+	}
+
+	err := Listen(Options{Addr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	addr := Addr()
+	if addr == nil {
+		t.Fatal("Addr() = nil; want non-nil after Listen")
+	}
+
+	port, err := Port()
+	if err != nil {
+		t.Fatalf("Port() unexpected error: %v", err)
+	}
+	if port <= 0 {
+		t.Fatalf("Port() = %d; want > 0", port)
+	}
+
+	Close()
+
+	if Addr() != nil {
+		t.Fatalf("Addr() = %v; want nil after Close", Addr())
+	}
+	if _, err := Port(); err == nil {
+		t.Fatal("Port() expected error after Close, got nil")
+	}
+}
+
 func TestFormatBytes(t *testing.T) {
 	tests := []struct {
 		val  uint64

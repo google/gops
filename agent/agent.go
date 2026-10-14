@@ -114,6 +114,31 @@ func Listen(opts Options) error {
 	return nil
 }
 
+// Addr returns the network address the agent is listening on, or nil if not listening.
+func Addr() net.Addr {
+	mu.Lock()
+	defer mu.Unlock()
+	if listener == nil {
+		return nil
+	}
+	return listener.Addr()
+}
+
+// Port returns the TCP port number the agent is listening on.
+// It returns an error if the agent is not listening or the address is not a TCP address.
+func Port() (int, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	if listener == nil {
+		return 0, errors.New("gops: agent is not listening")
+	}
+	tcpAddr, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("gops: listener address is not TCP: %T", listener.Addr())
+	}
+	return tcpAddr.Port, nil
+}
+
 func listen(l net.Listener) {
 	buf := make([]byte, 1)
 	for {
